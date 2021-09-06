@@ -20,72 +20,54 @@ let
     in
       builtins.fromJSON json;
 
-  metaUrl = "https://meta.multimc.org/v1";
-  packageManifest = fetchJson {
+  metaUrl = "https://launchermeta.mojang.com/mc/game/version_manifest_v2.json";
+  manifest = fetchJson {
     url = metaUrl;
-    hash = "sha256-R5RpVr67kFJhR1WKTREEWjK/f39asEyBWsWDgmSPcPM=";
+    hash = "sha256-wB4w2lLARKgDWzqzD8xsgjmZpAddoKVYPNANXdPziwU=";
   };
 
-  # downloads information about available versions of a package
-  getPackageVersions = { uid }:
+  # downloads information about a specific version of minecraft
+  getMc = { version }:
     let
-      packageInfo =
-        lib.findSingle
-          (p: p.uid == uid)
-          (abort "package not found")
-          (abort "multiple matching packages")
-          packageManifest.packages;
-    in
-      (
-        fetchJson {
-          inherit (packageInfo) sha256;
-          url = "${metaUrl}/${uid}";
-        }
-      ).versions;
-
-  # downloads information about a specific version of a package
-  getPackage = { uid, version }:
-    let
-      versions = getPackageVersions { inherit uid; };
-
       part = lib.lists.findFirst
-        (x: x.version == version)
+        (x: x.id == version)
         (abort "couldn't find version '${version}'")
-        versions;
+        manifest.versions;
     in
       fetchJson {
-        inherit (part) sha256;
-        url = "${metaUrl}/${uid}/${version}.json";
+        inherit (part) url sha1;
       };
 
+  isAllowed = rules:
+    (
+      builtins.elem
+        {
+          action = "allow";
+          os.name = os;
+        }
+        rules
+    )
+    || (
+      (
+        builtins.elem
+          {
+            action = "allow";
+          }
+          rules
+      ) && (
+        !builtins.elem
+          {
+            action = "disallow";
+            os.name = os;
+          }
+          rules
+      )
+    );
+
   # downloads the java and native libraries in the list
-  downloadLibs = libs:
+  downloadLibs = mc:
     let
-      isAllowed = rules:
-        (
-          builtins.elem
-            {
-              action = "allow";
-              os.name = os;
-            }
-            rules
-        )
-        || (
-          (
-            builtins.elem
-              {
-                action = "allow";
-              }
-              rules
-          ) && (
-            !builtins.elem
-              {
-                action = "disallow";
-                os.name = os;
-              }
-              rules
-          )
-        );
+      libs = mc.libraries;
       javaLibs =
         map
           (
@@ -109,7 +91,8 @@ let
                 x: x ? downloads.artifact && (x ? rules -> isAllowed x.rules)
               )
               libs
-          );
+          )
+        ++ [ (pkgs.fetchurl { inherit (mc.downloads.client) url sha1; }) ];
       nativeLibs =
         map
           (
@@ -135,39 +118,6 @@ let
           );
     in
       { inherit javaLibs nativeLibs; };
-
-  # downloads all required libraries for a package and its dependencies
-  downloadLibsRecursive = pkg:
-    if pkg ? requires then
-      let
-        libs = downloadLibs (
-          pkg.libraries
-          ++ lib.optional (pkg ? mainJar) pkg.mainJar
-          ++ pkg.mavenFiles or []
-        );
-        deps =
-          map
-            (
-              r: downloadLibsRecursive (
-                getPackage {
-                  inherit (r) uid;
-                  version = r.suggests or r.equals;
-                }
-              )
-            )
-            pkg.requires;
-      in
-        {
-          javaLibs =
-            libs.javaLibs
-            ++ builtins.concatLists (lib.catAttrs "javaLibs" deps);
-          nativeLibs =
-            libs.nativeLibs
-            ++ builtins.concatLists (lib.catAttrs "nativeLibs" deps);
-        }
-    else
-      # no dependencies, no need for recursion
-      downloadLibs pkg.libraries;
 
   downloadAssets = assetIndexInfo:
     let
@@ -197,40 +147,14 @@ let
       pkgs.runCommand "symlink-assets" {} script;
 
   minecraft =
-    { version
-    , forgeMods ? []
-    }:
+    { version }:
       let
-        mcPkg = getPackage { uid = "net.minecraft"; inherit version; };
-        pkg =
-          if forgeMods == []
-          then mcPkg
-          else
-            let
-              versions = getPackageVersions { uid = "net.minecraftforge"; };
-              latestVersion =
-                lib.lists.findFirst
-                  (
-                    x: builtins.elem
-                      {
-                        equals = version;
-                        uid = "net.minecraft";
-                      }
-                      x.requires
-                  )
-                  (abort "couldn't find forge version for minecraft ${version}")
-                  versions;
-            in
-              getPackage {
-                uid = "net.minecraftforge";
-                inherit (latestVersion) version;
-              };
+        pkg = getMc { inherit version; };
 
-        assets = downloadAssets mcPkg.assetIndex;
+        assets = downloadAssets pkg.assetIndex;
 
-        inherit (downloadLibsRecursive pkg) javaLibs nativeLibs;
+        inherit (downloadLibs pkg) javaLibs nativeLibs;
 
-        classpath = lib.concatStringsSep ":" javaLibs;
         nativeLibsDir = pkgs.symlinkJoin {
           name = "minecraft-natives";
           paths =
@@ -241,18 +165,7 @@ let
             ];
         };
 
-        forgeInstaller =
-          lib.findFirst
-            (x: builtins.match ".*installer\.jar" "${x}" != null)
-            null
-            javaLibs;
-
-        clientJar =
-          lib.findFirst
-            (x: builtins.match ".*client\.jar" "${x}" != null)
-            (abort "client not found")
-            javaLibs;
-
+        classpath = lib.concatStringsSep ":" javaLibs;
         javaLibsDir =
           let
             script = lib.concatStringsSep "\n"
@@ -272,33 +185,55 @@ let
               );
           in
             pkgs.runCommand "symlink-jars" {} script;
-      in
-        pkgs.writeScriptBin "minecraft" ''
-          LD_LIBRARY_PATH=${nativeLibsDir}
+
+        arguments =
+          pkg.minecraftArguments
+            or
+            (
+              lib.concatStringsSep " " (
+                map
+                  (
+                    x:
+                      if builtins.isString x then x
+                      else if isAllowed x.rules then
+                        if builtins.isList x.value then lib.concatStringsSep " " x.value
+                        else x.value
+                      else ""
+                  )
+                  (pkg.arguments.jvm ++ pkg.arguments.game)
+              )
+            );
+        runner = pkgs.writeText "minecraft-runner" ''
+          #! ${pkgs.bash}/bin/bash
+          out='%OUT%'
+          LD_LIBRARY_PATH="$out/natives"
           auth_player_name='NixDude'
-          version_name='${pkg.version}'
+          version_name='${version}'
           game_directory='./gamedir'
-          mkdir -p $game_directory
-          cp --no-preserve=all -r ${javaLibsDir}/* $game_directory/libraries
-          chmod -R +w $game_directory/libraries
-          assets_root='${assets}'
-          assets_index_name='${mcPkg.assetIndex.id}'
+          assets_root="$out/assets"
+          assets_index_name='${pkg.assetIndex.id}'
           auth_uuid='1234'
           auth_access_token='REPLACEME'
           user_type='mojang'
-          version_type='${mcPkg.type}'
+          version_type='${pkg.type}'
           exec ${pkgs.jre}/bin/java \
-            -Djava.library.path=${nativeLibsDir} \
-            -Dforgewrapper.librariesDir=$game_directory/libraries \
-            -Dforgewrapper.installer=${toString forgeInstaller} \
-            -Dforgewrapper.minecraft=${clientJar} \
-            -classpath ${classpath} \
-            ${pkg.mainClass} \
-            ${pkg.minecraftArguments or mcPkg.minecraftArguments} \
-            --tweakClass net.minecraftforge.fml.common.launcher.FMLTweaker
+            -Djava.library.path="$out/natives" \
+            -classpath '${classpath}' \
+            '${pkg.mainClass}' \
+            ${arguments}
+        '';
+      in
+        pkgs.runCommand "minecraft-env" {} ''
+          mkdir -p $out
+          ln -s ${javaLibsDir} $out/libraries
+          ln -s ${nativeLibsDir} $out/natives
+          ln -s ${assets} $out/assets
+          #find -L $out/libraries -name '*.jar' | tr -s '\n' ':' > $out/classpath.txt
+          mkdir -p $out/bin
+          sed "s|%OUT%|$out|" < ${runner} > $out/bin/minecraft
+          chmod +x $out/bin/minecraft
         '';
 in
 minecraft {
-  version = "1.16.1";
-  forgeMods = [ "asd" ];
+  version = "1.12.2";
 }
