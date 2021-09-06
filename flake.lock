@@ -1,0 +1,42 @@
+{
+  "nodes": {
+    "forge": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1630617833,
+        "narHash": "sha256-r8B4qjyfLpETNClMZHd2Xls8kJCds5CBAt6LvRJjl4w=",
+        "owner": "MinecraftForge",
+        "repo": "MinecraftForge",
+        "rev": "827c963d7e23542aa4fd6392a71ad1f2e4aea3cd",
+        "type": "github"
+      },
+      "original": {
+        "owner": "MinecraftForge",
+        "repo": "MinecraftForge",
+        "type": "github"
+      }
+    },
+    "nixpkgs": {
+      "locked": {
+        "lastModified": 1630509818,
+        "narHash": "sha256-YBKtL9POmy1mPJbwELUQ+AUb7P0NfIk5eM0qUslC2yM=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "2c49a6d8d8e1249d470aa46c1f8feb0f6bab7e0d",
+        "type": "github"
+      },
+      "original": {
+        "id": "nixpkgs",
+        "type": "indirect"
+      }
+    },
+    "root": {
+      "inputs": {
+        "forge": "forge",
+        "nixpkgs": "nixpkgs"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}
