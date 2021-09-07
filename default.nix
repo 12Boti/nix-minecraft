@@ -88,7 +88,10 @@ let
           (
             builtins.filter
               (
-                x: x ? downloads.artifact && (x ? rules -> isAllowed x.rules)
+                x:
+                  x ? downloads.artifact
+                  && x.downloads.artifact.url != ""
+                  && (x ? rules -> isAllowed x.rules)
               )
               libs
           )
@@ -99,9 +102,10 @@ let
             nativeLib:
               let
                 classifier = nativeLib.natives.${os};
+                a = nativeLib.downloads.classifiers.${classifier};
                 zip =
                   pkgs.fetchurl {
-                    inherit (nativeLib.downloads.classifiers.${classifier}) url sha1;
+                    inherit (a) url sha1;
                   };
               in
                 pkgs.runCommand "unpack-zip" {} ''
@@ -146,14 +150,14 @@ let
     in
       pkgs.runCommand "symlink-assets" {} script;
 
-  minecraft =
-    { version }:
+  minecraftFromPkg =
+    { pkg, extraJars ? [] }:
       let
-        pkg = getMc { inherit version; };
-
         assets = downloadAssets pkg.assetIndex;
 
-        inherit (downloadLibs pkg) javaLibs nativeLibs;
+        downloaded = downloadLibs pkg;
+        inherit (downloaded) nativeLibs;
+        javaLibs = downloaded.javaLibs ++ extraJars;
 
         nativeLibsDir = pkgs.symlinkJoin {
           name = "minecraft-natives";
@@ -203,12 +207,16 @@ let
                   (pkg.arguments.jvm ++ pkg.arguments.game)
               )
             );
+        jre = {
+          "8" = pkgs.jre8;
+          "16" = pkgs.jre;
+        }.${toString pkg.javaVersion.majorVersion};
         runner = pkgs.writeText "minecraft-runner" ''
           #! ${pkgs.bash}/bin/bash
           out='%OUT%'
           LD_LIBRARY_PATH="$out/natives"
           auth_player_name='NixDude'
-          version_name='${version}'
+          version_name='${pkg.id}'
           game_directory='./gamedir'
           assets_root="$out/assets"
           assets_index_name='${pkg.assetIndex.id}'
@@ -216,7 +224,7 @@ let
           auth_access_token='REPLACEME'
           user_type='mojang'
           version_type='${pkg.type}'
-          exec ${pkgs.jre}/bin/java \
+          exec ${jre}/bin/java \
             -Djava.library.path="$out/natives" \
             -classpath '${classpath}' \
             '${pkg.mainClass}' \
@@ -228,12 +236,43 @@ let
           ln -s ${javaLibsDir} $out/libraries
           ln -s ${nativeLibsDir} $out/natives
           ln -s ${assets} $out/assets
-          #find -L $out/libraries -name '*.jar' | tr -s '\n' ':' > $out/classpath.txt
           mkdir -p $out/bin
-          sed "s|%OUT%|$out|" < ${runner} > $out/bin/minecraft
+          sed "s|%OUT%|$out|" ${runner} > $out/bin/minecraft
           chmod +x $out/bin/minecraft
         '';
+
+  minecraft =
+    { version }:
+      minecraftFromPkg { pkg = (getMc { inherit version; }); };
+
+  minecraftForge =
+    { installer }:
+      let
+        forgeJar = pkgs.runCommand "forge.jar" {} ''
+          ${pkgs.jre}/bin/java -jar ${installer} --extract
+          cp *.jar $out
+        '';
+        pkg =
+          let
+            versionJsonFile = pkgs.runCommand "forge-version.json" {} ''
+              ${pkgs.unzip}/bin/unzip -p ${installer} version.json > $out
+            '';
+            forge = builtins.fromJSON (builtins.readFile versionJsonFile);
+            mc = getMc { version = forge.inheritsFrom; };
+          in
+            lib.zipAttrsWith
+              (
+                name: values:
+                # concat lists, replace other values
+                  if lib.all lib.isList values
+                  then lib.concatLists values
+                  else lib.head values
+              )
+              [ forge mc ];
+      in
+        minecraftFromPkg { inherit pkg; extraJars = [ forgeJar ]; };
 in
-minecraft {
-  version = "1.12.2";
+  # forge
+minecraftForge {
+  installer = (import ./nix/sources.nix).forge;
 }
