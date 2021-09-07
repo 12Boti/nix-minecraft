@@ -1,4 +1,5 @@
-{ pkgs ? import <nixpkgs> {}
+{ sources ? import ./nix/sources.nix
+, pkgs ? import sources.nixpkgs {}
 , lib ? pkgs.lib
 }:
 let
@@ -274,5 +275,5 @@ let
 in
   # forge
 minecraftForge {
-  installer = (import ./nix/sources.nix).forge;
+  installer = sources.forge;
 }

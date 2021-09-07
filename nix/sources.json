@@ -17,5 +17,17 @@
         "type": "tarball",
         "url": "https://github.com/nmattia/niv/archive/e0ca65c81a2d7a4d82a189f1e23a48d59ad42070.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
+    "nixpkgs": {
+        "branch": "release-21.05",
+        "description": "Nix Packages collection",
+        "homepage": "",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "e421291bdd94c79d6ae98f05ed8f09412d0b6ad7",
+        "sha256": "1cw9kcniyqinkdk284j4flgmzg56ddibq3x9n8bx0qx1hf3860d3",
+        "type": "tarball",
+        "url": "https://github.com/NixOS/nixpkgs/archive/e421291bdd94c79d6ae98f05ed8f09412d0b6ad7.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     }
 }
