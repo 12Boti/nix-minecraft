@@ -152,7 +152,7 @@ let
       pkgs.runCommand "symlink-assets" {} script;
 
   minecraftFromPkg =
-    { pkg, extraJars ? [] }:
+    { pkg, extraJars ? [], doCheck ? false }:
       let
         assets = downloadAssets pkg.assetIndex;
 
@@ -166,7 +166,7 @@ let
             nativeLibs
             ++ lib.optionals (os == "linux") [
               "${pkgs.libpulseaudio}/lib"
-              "${pkgs.xorg.libXxf86vm}/lib"
+              "${pkgs.xlibs.libXxf86vm}/lib"
             ];
         };
 
@@ -212,10 +212,8 @@ let
           "8" = pkgs.jre8;
           "16" = pkgs.jre;
         }.${toString pkg.javaVersion.majorVersion};
-        runner = pkgs.writeText "minecraft-runner" ''
-          #! ${pkgs.bash}/bin/bash
+        runner = pkgs.writeShellScript "minecraft-runner" ''
           out='%OUT%'
-          LD_LIBRARY_PATH="$out/natives"
           auth_player_name='NixDude'
           version_name='${pkg.id}'
           game_directory='./gamedir'
@@ -225,23 +223,55 @@ let
           auth_access_token='REPLACEME'
           user_type='mojang'
           version_type='${pkg.type}'
-          exec ${jre}/bin/java \
+          # clear all other environment variables (yay purity)
+          # keep:
+          #  DISPLAY and XAUTHORITY for graphics (x11)
+          #  XDG_RUNTIME_DIR for sound (pulseaudio?)
+          exec env -i \
+            LD_LIBRARY_PATH="$out/natives" \
+            DISPLAY="$DISPLAY" XAUTHORITY="$XAUTHORITY" \
+            XDG_RUNTIME_DIR="$XDG_RUNTIME_DIR" \
+            ${jre}/bin/java \
             -Djava.library.path="$out/natives" \
             -classpath '${classpath}' \
             '${pkg.mainClass}' \
             ${arguments}
         '';
       in
-        pkgs.runCommand "minecraft-env" {} ''
-          mkdir -p $out
-          ln -s ${javaLibsDir} $out/libraries
-          ln -s ${nativeLibsDir} $out/natives
-          ln -s ${assets} $out/assets
-          mkdir -p $out/bin
-          sed "s|%OUT%|$out|" ${runner} > $out/bin/minecraft
-          chmod +x $out/bin/minecraft
-        '';
-
+        pkgs.runCommand
+          "minecraft-env"
+          {}
+          (
+            ''
+              echo setting up environment
+              mkdir -p $out
+              ln -s ${javaLibsDir} $out/libraries
+              ln -s ${nativeLibsDir} $out/natives
+              ln -s ${assets} $out/assets
+              echo creating runner script
+              mkdir -p $out/bin
+              sed "s|%OUT%|$out|" ${runner} > $out/bin/minecraft
+              chmod +x $out/bin/minecraft
+            ''
+            + lib.optionalString doCheck ''
+              echo running checks
+              ${pkgs.xdummy}/bin/xdummy :3 \
+                -ac -nolisten unix +extension GLX +xinerama +extension RANDR +extension RENDER &
+              XPID=$!
+              sleep 1
+              echo running minecraft
+              export DISPLAY=:3
+              $out/bin/minecraft &
+              MCPID=$!
+              # wait until window visible
+              timeout 5s ${pkgs.xdotool}/bin/xdotool search --sync --onlyvisible --pid $MCPID
+              ${pkgs.xdotool}/bin/xdotool windowclose
+              wait $MCPID
+              kill $XPID
+            ''
+          );
+in
+{
   minecraft =
     { version }:
       minecraftFromPkg { pkg = (getMc { inherit version; }); };
@@ -272,8 +302,4 @@ let
               [ forge mc ];
       in
         minecraftFromPkg { inherit pkg; extraJars = [ forgeJar ]; };
-in
-  # forge
-minecraftForge {
-  installer = sources.forge;
 }
