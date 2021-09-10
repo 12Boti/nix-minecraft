@@ -10,7 +10,7 @@ let
       if p.isLinux then "linux"
       else if p.isWindows then "windows"
       else if p.isMacOS then "osx"
-      else abort "unsupported OS";
+      else throw "unsupported OS";
 
   fetchJson = { url, sha1 ? "", sha256 ? "", hash ? "" }:
     let
@@ -32,7 +32,7 @@ let
     let
       part = lib.lists.findFirst
         (x: x.id == version)
-        (abort "couldn't find version '${version}'")
+        (throw "couldn't find version '${version}'")
         manifest.versions;
     in
       fetchJson {
@@ -178,7 +178,7 @@ let
                 map
                   (
                     x: ''
-                      mkdir -p $out/$(dirname ${x.passthru.path})
+                      mkdir -p $out/${dirOf x.passthru.path}
                       ln -sf ${x} $out/${x.passthru.path}
                     ''
                   )
