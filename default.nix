@@ -1,5 +1,6 @@
 { sources ? import ./nix/sources.nix
 , pkgs ? import sources.nixpkgs {}
+, manifestFile ? sources.manifest
 , lib ? pkgs.lib
 }:
 let
@@ -22,10 +23,7 @@ let
       builtins.fromJSON json;
 
   metaUrl = "https://launchermeta.mojang.com/mc/game/version_manifest_v2.json";
-  manifest = fetchJson {
-    url = metaUrl;
-    hash = "sha256-wB4w2lLARKgDWzqzD8xsgjmZpAddoKVYPNANXdPziwU=";
-  };
+  manifest = builtins.fromJSON (builtins.readFile manifestFile);
 
   # downloads information about a specific version of minecraft
   getMc = { version }:
@@ -152,7 +150,16 @@ let
       pkgs.runCommand "symlink-assets" {} script;
 
   minecraftFromPkg =
-    { pkg, extraJars ? [], doCheck ? false }:
+    {
+      # json containing information about this version of minecraft
+      pkg
+      # extra .jar files to add to classpath
+    , extraJars ? []
+      # extra files to be copied to the game directory on launch
+    , extraGamedirFiles ? null
+      # run tests if true
+    , doCheck ? false
+    }:
       let
         assets = downloadAssets pkg.assetIndex;
 
@@ -217,6 +224,12 @@ let
           auth_player_name='NixDude'
           version_name='${pkg.id}'
           game_directory='./gamedir'
+          ${lib.optionalString
+          (extraGamedirFiles != null)
+          ''
+            echo "copying files to game directory ($game_directory)"
+            rsync -rl --ignore-existing --info=skip2,name ${extraGamedirFiles}/ "$game_directory"
+          ''}
           assets_root="$out/assets"
           assets_index_name='${pkg.assetIndex.id}'
           auth_uuid='1234'
@@ -273,11 +286,14 @@ let
 in
 {
   minecraft =
-    { version }:
-      minecraftFromPkg { pkg = (getMc { inherit version; }); };
+    { version, extraGamedirFiles ? null }:
+      minecraftFromPkg {
+        pkg = getMc { inherit version; };
+        inherit extraGamedirFiles;
+      };
 
   minecraftForge =
-    { installer }:
+    { installer, mods ? [], extraGamedirFiles ? null }:
       let
         forgeJar = pkgs.runCommand "forge.jar" {} ''
           ${pkgs.jre}/bin/java -jar ${installer} --extract
@@ -301,5 +317,20 @@ in
               )
               [ forge mc ];
       in
-        minecraftFromPkg { inherit pkg; extraJars = [ forgeJar ]; };
+        minecraftFromPkg {
+          inherit pkg;
+          extraJars = [ forgeJar ];
+          extraGamedirFiles = pkgs.symlinkJoin {
+            name = "extra-gamedir";
+            paths =
+              lib.optional (extraGamedirFiles != null) extraGamedirFiles
+              ++ [
+                (
+                  pkgs.linkFarm
+                    "mods"
+                    (map (m: { name = "mods/${m.name}"; path = m; }) mods)
+                )
+              ];
+          };
+        };
 }

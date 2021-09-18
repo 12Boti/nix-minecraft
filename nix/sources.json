@@ -6,6 +6,12 @@
         "url_template": "https://maven.minecraftforge.net/net/minecraftforge/forge/<version>/forge-<version>-installer.jar",
         "version": "1.12.2-14.23.5.2855"
     },
+    "manifest": {
+        "sha256": "01cbyg9ms3fh7icab82x0yj9jfc2dk60zcrsbc1shi60abd307n0",
+        "type": "file",
+        "url": "https://launchermeta.mojang.com/mc/game/version_manifest_v2.json",
+        "url_template": "https://launchermeta.mojang.com/mc/game/version_manifest_v2.json"
+    },
     "niv": {
         "branch": "master",
         "description": "Easy dependency management for Nix projects",
