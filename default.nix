@@ -227,6 +227,10 @@ let
           ${lib.optionalString
           (extraGamedirFiles != null)
           ''
+            if [ -d "$game_directory/mods" -a -d "${extraGamedirFiles}/mods" ]; then
+              diff -q "$game_directory/mods" "${extraGamedirFiles}/mods" \
+                || echo "warning: mods folder already exists, remove it in case of conflicts and try again"
+            fi
             echo "copying files to game directory ($game_directory)"
             rsync -rl --ignore-existing --info=skip2,name ${extraGamedirFiles}/ "$game_directory"
           ''}
@@ -261,6 +265,9 @@ let
               ln -s ${javaLibsDir} $out/libraries
               ln -s ${nativeLibsDir} $out/natives
               ln -s ${assets} $out/assets
+              ${lib.optionalString
+              (extraGamedirFiles != null)
+              "ln -s ${extraGamedirFiles} $out/gamedir"}
               echo creating runner script
               mkdir -p $out/bin
               sed "s|%OUT%|$out|" ${runner} > $out/bin/minecraft
@@ -333,4 +340,21 @@ in
               ];
           };
         };
+
+  curseforgeMod =
+    { projectId, fileId, hash }:
+      pkgs.runCommandLocal
+        "curseforge-mod-${toString projectId}-${toString fileId}.jar"
+        {
+          outputHash = hash;
+          buildInputs = [ pkgs.curl pkgs.jq ];
+          SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
+        }
+        ''
+          url=$(
+            curl 'https://addons-ecs.forgesvc.net/api/v2/addon/${toString projectId}/files' \
+            | jq -r '.[] | select(.id == ${toString fileId}) | .downloadUrl'
+          )
+          curl -L -o "$out" "$url"
+        '';
 }

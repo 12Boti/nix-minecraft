@@ -6,10 +6,12 @@ with import ./. {};
 {
   forge = minecraftForge {
     installer = forge;
-    mods = map pkgs.fetchurl [
+    mods = map curseforgeMod [
+      # JEI
       {
-        url = "https://edge.forgecdn.net/files/2555/164/jei_1.12.2-4.9.1.169.jar";
-        hash = "sha256-yboKB0uZhLXYB6pZahnTjxNZIiNHABpwwtDe4On+Lto=";
+        projectId = 238222;
+        fileId = 3043174;
+        hash = "sha256-nbwsDsjCiCH91dykh5CQiVAWB+4lwOhHDEPJ/QvRIFM=";
       }
     ];
   };
@@ -18,5 +20,10 @@ with import ./. {};
   };
   vanilla16 = minecraft {
     version = "1.16";
+  };
+  mod = curseforgeMod {
+    projectId = 238222;
+    fileId = 3448057;
+    hash = "sha256-Q4j9n1sZ2ccjz9DLBznVjvmZlNwNHYeaG1Tr1Zh38go=";
   };
 }
