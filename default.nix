@@ -300,8 +300,13 @@ in
       };
 
   minecraftForge =
-    { installer, mods ? [], extraGamedirFiles ? null }:
+    { version, hash, mods ? [], extraGamedirFiles ? null }:
       let
+        installer = pkgs.fetchurl {
+          url = "https://maven.minecraftforge.net/net/minecraftforge/forge/${version}/forge-${version}-installer.jar";
+          inherit hash;
+        };
+
         forgeJar = pkgs.runCommand "forge.jar" {} ''
           ${pkgs.jre}/bin/java -jar ${installer} --extract
           cp *.jar $out

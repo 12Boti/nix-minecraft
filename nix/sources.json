@@ -1,11 +1,4 @@
 {
-    "forge": {
-        "sha256": "1jazranh6ac1zfdaxinxim67d8w5kifrhp92dn52wxphwlwcgyy7",
-        "type": "file",
-        "url": "https://maven.minecraftforge.net/net/minecraftforge/forge/1.12.2-14.23.5.2855/forge-1.12.2-14.23.5.2855-installer.jar",
-        "url_template": "https://maven.minecraftforge.net/net/minecraftforge/forge/<version>/forge-<version>-installer.jar",
-        "version": "1.12.2-14.23.5.2855"
-    },
     "manifest": {
         "sha256": "01cbyg9ms3fh7icab82x0yj9jfc2dk60zcrsbc1shi60abd307n0",
         "type": "file",

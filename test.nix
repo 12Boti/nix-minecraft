@@ -1,11 +1,11 @@
 { sources ? import ./nix/sources.nix
-, forge ? sources.forge
 , pkgs ? import sources.nixpkgs {}
 }:
 with import ./. {};
 {
   forge = minecraftForge {
-    installer = forge;
+    version = "1.12.2-14.23.5.2855";
+    hash = "sha256-x/vHOOXwdi6KbSJdmF2chaN2TI3dxq6a+4EpA63KX8k=";
     mods = map curseforgeMod [
       # JEI
       {
