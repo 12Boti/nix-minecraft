@@ -247,7 +247,7 @@ let
         '';
       in
         pkgs.runCommand
-          "minecraft-env"
+          "minecraft"
           {}
           (
             ''
