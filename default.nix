@@ -231,7 +231,7 @@ let
                 || echo "warning: mods folder already exists, remove it in case of conflicts and try again"
             fi
             echo "copying files to game directory ($game_directory)"
-            rsync -rl --ignore-existing --info=skip2,name ${extraGamedirFiles}/ "$game_directory"
+            rsync -rl --ignore-existing --chmod=755 --info=skip2,name ${extraGamedirFiles}/ "$game_directory"
           ''}
           assets_root="$out/assets"
           assets_index_name='${pkg.assetIndex.id}'
