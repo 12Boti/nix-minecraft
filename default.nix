@@ -352,6 +352,7 @@ in
         "curseforge-mod-${toString projectId}-${toString fileId}.jar"
         {
           outputHash = hash;
+          outputHashAlgo = "sha256";
           buildInputs = [ pkgs.curl pkgs.jq ];
           SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
         }
