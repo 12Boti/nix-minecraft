@@ -3,8 +3,11 @@
 }:
 with import ./. {};
 {
+  inherit getMcHash;
+
   forge = minecraftForge {
     version = "1.12.2-14.23.5.2855";
+    mcSha1 = "f07e0f1228f79b9b04313fc5640cd952474ba6f5";
     hash = "sha256-x/vHOOXwdi6KbSJdmF2chaN2TI3dxq6a+4EpA63KX8k=";
     mods = map curseforgeMod [
       # JEI
@@ -17,9 +20,11 @@ with import ./. {};
   };
   vanilla12 = minecraft {
     version = "1.12.2";
+    sha1 = "f07e0f1228f79b9b04313fc5640cd952474ba6f5";
   };
   vanilla16 = minecraft {
     version = "1.16";
+    sha1 = "5a157ca1ae150c3acb10afdfe714ba34bf322315";
   };
   mod = curseforgeMod {
     projectId = 238222;

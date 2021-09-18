@@ -1,6 +1,5 @@
 { sources ? import ./nix/sources.nix
 , pkgs ? import sources.nixpkgs {}
-, manifestFile ? sources.manifest
 , lib ? pkgs.lib
 }:
 let
@@ -22,19 +21,12 @@ let
     in
       builtins.fromJSON json;
 
-  manifest = builtins.fromJSON (builtins.readFile manifestFile);
-
   # downloads information about a specific version of minecraft
-  getMc = { version }:
-    let
-      part = lib.lists.findFirst
-        (x: x.id == version)
-        (throw "couldn't find version '${version}'")
-        manifest.versions;
-    in
-      fetchJson {
-        inherit (part) url sha1;
-      };
+  getMc = { version, sha1 }:
+    fetchJson {
+      url = "https://launchermeta.mojang.com/v1/packages/${sha1}/${version}.json";
+      inherit sha1;
+    };
 
   isAllowed = rules:
     (
@@ -291,15 +283,24 @@ let
           );
 in
 {
+  getMcHash = pkgs.writeShellScriptBin "getMcHash" ''
+    test -z $1 && echo "Usage: getMcHash <version>" && exit 1
+    curl 'https://launchermeta.mojang.com/mc/game/version_manifest_v2.json' \
+      | jq -r ".versions[] | select(.id == \"$1\") | .sha1"
+  '';
+
   minecraft =
-    { version, extraGamedirFiles ? null }:
+    { version
+    , sha1 # use `getMcHash <version>`
+    , extraGamedirFiles ? null
+    }:
       minecraftFromPkg {
-        pkg = getMc { inherit version; };
+        pkg = getMc { inherit version sha1; };
         inherit extraGamedirFiles;
       };
 
   minecraftForge =
-    { version, hash, mods ? [], extraGamedirFiles ? null }:
+    { version, mcSha1, hash, mods ? [], extraGamedirFiles ? null }:
       let
         installer = pkgs.fetchurl {
           url = "https://maven.minecraftforge.net/net/minecraftforge/forge/${version}/forge-${version}-installer.jar";
@@ -316,7 +317,7 @@ in
               ${pkgs.unzip}/bin/unzip -p ${installer} version.json > $out
             '';
             forge = builtins.fromJSON (builtins.readFile versionJsonFile);
-            mc = getMc { version = forge.inheritsFrom; };
+            mc = getMc { version = forge.inheritsFrom; sha1 = mcSha1; };
           in
             lib.zipAttrsWith
               (
