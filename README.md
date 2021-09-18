@@ -28,6 +28,7 @@ $ nix run -f myminecraft.nix
 
 ### Forge
 Call `minecraftForge` with a `version`, `mcSha1`, `hash`, and `mods`.
+You can get the version on this site: https://files.minecraftforge.net/net/minecraftforge/forge/.
 
 `mcSha1` is the same as `sha1` for vanilla.
 You can leave `hash` empty and nix will tell you what to use.
