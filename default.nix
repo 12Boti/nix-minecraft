@@ -22,7 +22,6 @@ let
     in
       builtins.fromJSON json;
 
-  metaUrl = "https://launchermeta.mojang.com/mc/game/version_manifest_v2.json";
   manifest = builtins.fromJSON (builtins.readFile manifestFile);
 
   # downloads information about a specific version of minecraft
