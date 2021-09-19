@@ -228,9 +228,12 @@ let
         }.${toString pkg.javaVersion.majorVersion};
         runner = pkgs.writeShellScript "minecraft-runner" ''
           out='%OUT%'
-          auth_player_name='NixDude'
+          usage="Usage: $0 <username> [<gamedir>]"
+          test $# -eq 0 && echo $usage && exit 1
+          test "$1" = "-h" -o "$1" = "--help" && echo $usage && exit 1
+          auth_player_name="$1"
           version_name='${pkg.id}'
-          game_directory='./gamedir'
+          game_directory="''${2:-./gamedir}"
           ${lib.optionalString
           (extraGamedirFiles != null)
           ''

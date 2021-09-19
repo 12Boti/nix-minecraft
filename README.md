@@ -23,8 +23,9 @@ minecraft {
 ```
 Run it:
 ```sh
-$ nix run -f myminecraft.nix
+$ nix run -f myminecraft.nix . NixDude ./mygamedir
 ```
+First parameter is your username, second is the game directory (where saves and mods are saved).
 
 ### Forge
 Call `minecraftForge` with a `version`, `mcSha1`, `hash`, and `mods`.
@@ -46,7 +47,7 @@ minecraftForge {
 }
 ```
 ```sh
-$ nix run -f myminecraft.nix
+$ nix run -f myminecraft.nix . NixDude ./mygamedir
 error: hash mismatch in fixed-output derivation '/nix/store/m50zdpi4iywmpa1839kmmkj4s5a9gl2w-forge-1.12.2-14.23.5.2855-installer.jar.drv':
          specified: sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
             got:    sha256-x/vHOOXwdi6KbSJdmF2chaN2TI3dxq6a+4EpA63KX8k=
@@ -62,7 +63,7 @@ minecraftForge {
 }
 ```
 ```sh
-$ nix run -f myminecraft.nix # it works now
+$ nix run -f myminecraft.nix . NixDude ./mygamedir # it works now
 ```
 Let's add some mods!
 For every mod, call `curseforgeMod` with `projectId`, `fileId`, and `hash`. (I used the nix builtin `map` here to be more concise)
