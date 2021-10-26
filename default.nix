@@ -236,6 +236,8 @@ let
         version_name='${pkg.id}'
         game_directory="''${2:-./gamedir}"
         game_directory="$(realpath "$game_directory")"
+        mkdir -p "$game_directory"
+        cd "$game_directory"
         ${lib.optionalString
         (extraGamedirFiles != null)
         ''
@@ -252,7 +254,6 @@ let
         auth_access_token='REPLACEME'
         user_type='mojang'
         version_type='${pkg.type}'
-        cd "$game_directory"
         # clear all other environment variables (yay purity)
         # keep:
         #  DISPLAY and XAUTHORITY for graphics (x11)
