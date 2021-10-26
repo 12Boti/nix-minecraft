@@ -98,6 +98,25 @@ minecraftForge {
 }
 ```
 
+### FTB modpacks
+Call `minecraftFtbModpack`. Find the `id` at https://www.feed-the-beast.com/modpack. Get the `version` from the versions tab. (You need the version ID, not the version number!)
+
+`mcSha1` is the same as for vanilla.
+You can leave `hash` and `forgeHash` empty to have nix tell you.
+```nix
+let
+  inherit (import ./path/to/default.nix {}) minecraftFtbModpack;
+in
+minecraftFtbModpack {
+  id = 35; # FTB Revelation
+  version = 2059; # 3.5.0
+  hash = "sha256-9dN7YrKWHdS97gMQGQbNMVjOBMNMg36qMMot47OthAw=";
+  mcSha1 = "f07e0f1228f79b9b04313fc5640cd952474ba6f5";
+  forgeHash = "sha256-3Z4QA7WbxCYJxvzReb4VfxcyCt9WzHL0z64FMxzk6nk=";
+}
+```
+Note: both downloading and starting modpacks takes a long time, be patient!
+
 ## License
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

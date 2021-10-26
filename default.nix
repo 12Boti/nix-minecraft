@@ -235,6 +235,7 @@ let
         auth_player_name="$1"
         version_name='${pkg.id}'
         game_directory="''${2:-./gamedir}"
+        game_directory="$(realpath "$game_directory")"
         ${lib.optionalString
         (extraGamedirFiles != null)
         ''
@@ -243,7 +244,7 @@ let
               || echo "warning: mods folder already exists, remove it in case of conflicts and try again"
           fi
           echo "copying files to game directory ($game_directory)"
-          rsync -rl --ignore-existing --chmod=755 --info=skip2,name ${extraGamedirFiles}/ "$game_directory"
+          rsync -rL --ignore-existing --chmod=755 --info=skip2,name ${extraGamedirFiles}/ "$game_directory"
         ''}
         assets_root="$out/assets"
         assets_index_name='${pkg.assetIndex.id}'
@@ -251,6 +252,7 @@ let
         auth_access_token='REPLACEME'
         user_type='mojang'
         version_type='${pkg.type}'
+        cd "$game_directory"
         # clear all other environment variables (yay purity)
         # keep:
         #  DISPLAY and XAUTHORITY for graphics (x11)
@@ -301,8 +303,33 @@ let
           kill $XPID
         ''
       );
+
+  fetchUrlToPath =
+    { url, name, sha1 ? "", path }:
+    let
+      escapedName = lib.strings.sanitizeDerivationName name;
+      escapedUrl = builtins.replaceStrings [ " " ] [ "%20" ] url;
+      f = pkgs.fetchurl {
+        inherit sha1;
+        url = escapedUrl;
+        name = escapedName;
+        curlOpts = "--globoff"; # do not misinterpret [] brackets
+      };
+    in
+    pkgs.runCommandLocal f.name { } ''
+      mkdir -p "$out/${path}"
+      cp '${f}' "$out/${path}/${name}"
+    '';
+
+  ftbModpackFiles = json:
+    pkgs.symlinkJoin {
+      name = "ftb-modpack";
+      paths = map
+        (f: fetchUrlToPath { inherit (f) url name sha1 path; })
+        (builtins.filter (f: !f.serveronly) json.files);
+    };
 in
-{
+rec {
   getMcHash = pkgs.writeShellScriptBin "getMcHash" ''
     test -z $1 && echo "Usage: getMcHash <version>" && exit 1
     curl 'https://launchermeta.mojang.com/mc/game/version_manifest_v2.json' \
@@ -383,4 +410,27 @@ in
         )
         curl -L -o "$out" "$url"
       '';
+
+  minecraftFtbModpack =
+    { id, version, hash ? "", mcSha1, forgeHash ? "" }:
+    let
+      json = fetchJson {
+        url = "https://api.modpacks.ch/public/modpack/${toString id}/${toString version}";
+        inherit hash;
+      };
+      forgeVersion = (lib.findFirst
+        (t: t.name == "forge")
+        (throw "forge not found in modpack targets")
+        json.targets).version;
+      mcVersion = (lib.findFirst
+        (t: t.name == "minecraft")
+        (throw "minecraft not found in modpack targets")
+        json.targets).version;
+    in
+    minecraftForge {
+      version = mcVersion + "-" + forgeVersion;
+      inherit mcSha1;
+      hash = forgeHash;
+      extraGamedirFiles = ftbModpackFiles json;
+    };
 }

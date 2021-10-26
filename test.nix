@@ -1,7 +1,7 @@
 { sources ? import ./nix/sources.nix
-, pkgs ? import sources.nixpkgs {}
+, pkgs ? import sources.nixpkgs { }
 }:
-with import ./. {};
+with import ./. { };
 {
   inherit getMcHash;
 
@@ -30,5 +30,12 @@ with import ./. {};
     projectId = 238222;
     fileId = 3448057;
     hash = "sha256-Q4j9n1sZ2ccjz9DLBznVjvmZlNwNHYeaG1Tr1Zh38go=";
+  };
+  modpack = minecraftFtbModpack {
+    id = 35;
+    version = 2059;
+    hash = "sha256-9dN7YrKWHdS97gMQGQbNMVjOBMNMg36qMMot47OthAw=";
+    mcSha1 = "f07e0f1228f79b9b04313fc5640cd952474ba6f5";
+    forgeHash = "sha256-3Z4QA7WbxCYJxvzReb4VfxcyCt9WzHL0z64FMxzk6nk=";
   };
 }
