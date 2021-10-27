@@ -32,7 +32,7 @@ let
     in
     pkgs.runCommandLocal f.name { } ''
       mkdir -p "$out/${path}"
-      cp '${f}' "$out/${path}/${name}"
+      ln -s '${f}' "$out/${path}/${name}"
     '';
 
   ftbModpackFiles = json:
