@@ -16,6 +16,46 @@
 { pkgs, lib ? pkgs.lib }@inputs:
 let
   inherit (import ./minecraft.nix inputs) getMc minecraftFromPkg;
+  knownLibs = import ./knownlibs.nix;
+  mergePkgs = lib.zipAttrsWith
+    (
+      name: values:
+        # concat lists, replace other values
+        if lib.all lib.isList values
+        then lib.concatLists values
+        else lib.head values
+    );
+  fixOldPkg = pkg: pkg //
+    {
+      libraries = map
+        (l:
+          if l ? downloads.artifact
+          then l
+          else if knownLibs ? ${l.name}
+          then knownLibs.${l.name}
+          else if l ? url && l ? checksums
+          then {
+            inherit (l) name;
+            downloads.artifact =
+              let
+                inherit (lib) splitString;
+                inherit (builtins) concatStringsSep head tail;
+                parts = splitString ":" l.name;
+              in
+              {
+                url =
+                  l.url
+                    + concatStringsSep "/" ((splitString "." (head parts)) ++ (tail parts))
+                    + "/"
+                    + concatStringsSep "-" (tail parts)
+                    + ".jar";
+                sha1 = head l.checksums;
+              };
+          }
+          else { }
+        )
+        pkg.libraries;
+    };
 in
 { version, mcSha1, hash, mods ? [ ], extraGamedirFiles ? null }:
 let
@@ -31,20 +71,26 @@ let
   pkg =
     let
       versionJsonFile = pkgs.runCommand "forge-version.json" { } ''
-        ${pkgs.unzip}/bin/unzip -p ${installer} version.json > $out
+        files="$(${pkgs.unzip}/bin/unzip -Z -1 ${installer})"
+        if [[ "$files" =~ "version.json" ]]
+        then
+          ${pkgs.unzip}/bin/unzip -p ${installer} version.json > $out
+        else
+          f=$(echo "$files" | grep -o '^forge-.\+-universal\.jar$')
+          if [[ -n "$f" ]]
+          then
+            ${pkgs.unzip}/bin/unzip ${installer} "$f"
+            ${pkgs.unzip}/bin/unzip -p "$f" version.json > $out
+          else
+            echo "error: version.json cannot be found" >&2
+            false
+          fi
+        fi
       '';
-      forge = builtins.fromJSON (builtins.readFile versionJsonFile);
+      forge = fixOldPkg (builtins.fromJSON (builtins.readFile versionJsonFile));
       mc = getMc { version = forge.inheritsFrom; sha1 = mcSha1; };
     in
-    lib.zipAttrsWith
-      (
-        name: values:
-          # concat lists, replace other values
-          if lib.all lib.isList values
-          then lib.concatLists values
-          else lib.head values
-      )
-      [ forge mc ];
+    mergePkgs [ forge mc ];
 in
 minecraftFromPkg {
   inherit pkg;
