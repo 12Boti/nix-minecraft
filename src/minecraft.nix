@@ -115,7 +115,7 @@ rec {
               || echo "warning: mods folder already exists, remove it in case of conflicts and try again"
           fi
           echo "copying files to game directory ($game_directory)"
-          rsync -rL --ignore-existing --chmod=755 --info=skip2,name ${extraGamedirFiles}/ "$game_directory"
+          ${pkgs.rsync}/bin/rsync -rL --ignore-existing --chmod=755 --info=skip2,name ${extraGamedirFiles}/ "$game_directory"
         ''}
         assets_root="$out/assets"
         assets_index_name='${pkg.assetIndex.id}'
@@ -138,11 +138,16 @@ rec {
           ${arguments}
       '';
     in
-    pkgs.runCommand
-      "minecraft"
-      { }
-      (
-        ''
+    pkgs.stdenvNoCC.mkDerivation
+      {
+        pname = "minecraft";
+        version = pkg.id;
+
+        dontUnpack = true;
+        dontConfigure = true;
+        dontBuild = true;
+
+        installPhase = ''
           echo setting up environment
           mkdir -p $out
           ln -s ${javaLibsDir} $out/libraries
@@ -155,8 +160,11 @@ rec {
           mkdir -p $out/bin
           sed "s|%OUT%|$out|" ${runner} > $out/bin/minecraft
           chmod +x $out/bin/minecraft
-        ''
-        + lib.optionalString doCheck ''
+        '';
+
+        doCheck = false;
+        doInstallCheck = doCheck;
+        installCheckPhase = ''
           echo running checks
           ${pkgs.xdummy}/bin/xdummy :3 \
             -ac -nolisten unix +extension GLX +xinerama +extension RANDR +extension RENDER &
@@ -164,15 +172,15 @@ rec {
           sleep 1
           echo running minecraft
           export DISPLAY=:3
-          $out/bin/minecraft &
+          $out/bin/minecraft NixDude ./gamedir &
           MCPID=$!
           # wait until window visible
           timeout 5s ${pkgs.xdotool}/bin/xdotool search --sync --onlyvisible --pid $MCPID
           ${pkgs.xdotool}/bin/xdotool windowclose
           wait $MCPID
           kill $XPID
-        ''
-      );
+        '';
+      };
 
   minecraft =
     { version
