@@ -117,6 +117,28 @@ minecraftFtbModpack {
 ```
 Note: both downloading and starting modpacks takes a long time, be patient!
 
+### LiteLoader
+Works similarly to forge, but instead of the version, use the url of the **jar file**
+from https://www.liteloader.com/download.
+```nix
+let
+  inherit (import ./path/to/default.nix {}) minecraftLiteloader curseforgeMod;
+in
+minecraftLiteloader {
+  url = "http://dl.liteloader.com/redist/1.10.2/liteloader-installer-1.10.2-00.jar";
+  mcSha1 = "a86a4eaacfee738c8d609baf6d414175f94c26f6";
+  hash = "sha256-PXSSqIB5WfoPXdnHOFDwqhV3oBG0acc+mTAqZ09Xa9M=";
+  mods = map curseforgeMod [
+    # Armors HUD Revived
+    {
+      projectId = 244537;
+      fileId = 2317559;
+      hash = "sha256-Q+s8EqmBizXpgGnel2PXWGLRPmVidWvMqQVmctbEK4o=";
+    }
+  ];
+}
+```
+
 ## License
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

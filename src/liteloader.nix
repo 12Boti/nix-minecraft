@@ -18,44 +18,26 @@ let
   inherit (import ./minecraft.nix inputs) getMc minecraftFromPkg;
   inherit (import ./common.nix inputs) mergePkgs fixOldPkg;
 in
-{ version, mcSha1, hash, mods ? [ ], extraGamedirFiles ? null }:
+{ url, mcSha1, hash, mods ? [ ], extraGamedirFiles ? null }:
 let
-  installer = pkgs.fetchurl {
-    url = "https://maven.minecraftforge.net/net/minecraftforge/forge/${version}/forge-${version}-installer.jar";
-    inherit hash;
-  };
+  installer = pkgs.fetchurl { inherit url hash; };
 
-  forgeJar = pkgs.runCommand "forge.jar" { } ''
-    ${pkgs.jre}/bin/java -jar ${installer} --extract
-    cp *.jar $out
+  liteloaderJar = pkgs.runCommand "liteloader.jar" { } ''
+    ${pkgs.unzip}/bin/unzip -p ${installer} 'liteloader*.jar' > $out
   '';
   pkg =
     let
-      versionJsonFile = pkgs.runCommand "forge-version.json" { } ''
-        files="$(${pkgs.unzip}/bin/unzip -Z -1 ${installer})"
-        if [[ "$files" =~ "version.json" ]]
-        then
-          ${pkgs.unzip}/bin/unzip -p ${installer} version.json > $out
-        else
-          f=$(echo "$files" | grep -o '^forge-.\+-universal\.jar$')
-          if [[ -n "$f" ]]
-          then
-            ${pkgs.unzip}/bin/unzip ${installer} "$f"
-            ${pkgs.unzip}/bin/unzip -p "$f" version.json > $out
-          else
-            echo "error: version.json cannot be found" >&2
-            false
-          fi
-        fi
+      versionJsonFile = pkgs.runCommand "liteloader-version.json" { } ''
+        ${pkgs.unzip}/bin/unzip -p ${installer} install_profile.json > $out
       '';
-      forge = fixOldPkg (builtins.fromJSON (builtins.readFile versionJsonFile));
-      mc = getMc { version = forge.inheritsFrom; sha1 = mcSha1; };
+      liteloader = fixOldPkg (builtins.fromJSON (builtins.readFile versionJsonFile)).versionInfo;
+      mc = getMc { version = liteloader.inheritsFrom; sha1 = mcSha1; };
     in
-    mergePkgs [ forge mc ];
+    mergePkgs [ liteloader mc ];
 in
 minecraftFromPkg {
   inherit pkg;
-  extraJars = [ forgeJar ];
+  extraJars = [ liteloaderJar ];
   extraGamedirFiles = pkgs.symlinkJoin {
     name = "extra-gamedir";
     paths =

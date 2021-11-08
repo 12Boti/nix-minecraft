@@ -34,6 +34,13 @@
       sha1 = "4333508b8dd8ee72aa4e39afa713b3a74579b773";
     };
   };
+  "org.ow2.asm:asm-all:5.2" = {
+    name = "org.ow2.asm:asm-all:5.2";
+    downloads.artifact = {
+      url = "http://repo.liteloader.com/org/ow2/asm/asm-all/5.2/asm-all-5.2.jar";
+      sha1 = "2ea49e08b876bbd33e0a7ce75c8f371d29e1f10a";
+    };
+  };
 
   "lzma:lzma:0.0.1" = {
     name = "lzma:lzma:0.0.1";

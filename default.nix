@@ -28,4 +28,6 @@
   curseforgeMod = import ./src/curseforge.nix { inherit pkgs lib; };
 
   minecraftFtbModpack = import ./src/ftb.nix { inherit pkgs lib; };
+
+  minecraftLiteloader = import ./src/liteloader.nix { inherit pkgs lib; };
 }

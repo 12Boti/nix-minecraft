@@ -58,4 +58,49 @@ rec {
       json = builtins.readFile file;
     in
     builtins.fromJSON json;
+
+  mergePkgs = lib.zipAttrsWith
+    (
+      name: values:
+        # concat lists, replace other values
+        if lib.all lib.isList values
+        then lib.concatLists values
+        else lib.head values
+    );
+
+  fixOldPkg =
+    let
+      knownLibs = import ./knownlibs.nix;
+    in
+    pkg: pkg //
+      {
+        libraries = map
+          (l:
+            if l ? downloads.artifact
+            then l
+            else if knownLibs ? ${l.name}
+            then knownLibs.${l.name}
+            else if l ? url && l ? checksums
+            then {
+              inherit (l) name;
+              downloads.artifact =
+                let
+                  inherit (lib) splitString;
+                  inherit (builtins) concatStringsSep head tail;
+                  parts = splitString ":" l.name;
+                in
+                {
+                  url =
+                    l.url
+                      + concatStringsSep "/" ((splitString "." (head parts)) ++ (tail parts))
+                      + "/"
+                      + concatStringsSep "-" (tail parts)
+                      + ".jar";
+                  sha1 = head l.checksums;
+                };
+            }
+            else { }
+          )
+          pkg.libraries;
+      };
 }
