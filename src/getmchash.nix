@@ -17,5 +17,5 @@
 pkgs.writeShellScriptBin "getMcHash" ''
   test -z $1 && echo "Usage: getMcHash <version>" && exit 1
   curl 'https://launchermeta.mojang.com/mc/game/version_manifest_v2.json' \
-    | jq -r ".versions[] | select(.id == \"$1\") | .sha1"
+    | ${pkgs.jq}/bin/jq -r ".versions[] | select(.id == \"$1\") | .sha1"
 ''
