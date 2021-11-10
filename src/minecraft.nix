@@ -127,10 +127,8 @@ rec {
         # keep:
         #  DISPLAY and XAUTHORITY for graphics (x11)
         #  XDG_RUNTIME_DIR for sound (pulseaudio?)
-        exec env -i \
+        exec env \
           LD_LIBRARY_PATH="$out/natives" \
-          DISPLAY="$DISPLAY" XAUTHORITY="$XAUTHORITY" \
-          XDG_RUNTIME_DIR="$XDG_RUNTIME_DIR" \
           ${jre}/bin/java \
           -Djava.library.path="$out/natives" \
           -classpath '${classpath}' \
