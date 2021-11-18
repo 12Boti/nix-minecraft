@@ -5,12 +5,9 @@ A Minecraft launcher in nix.
 Import the `default.nix` in this repository in any way you want (vendoring, [git submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules), [nix flakes](https://nixos.wiki/wiki/Flakes), [niv](https://github.com/nmattia/niv), `builtins.fetchTarball`, ...).
 
 ### Vanilla
-Call `minecraft` with a `version` and a `sha1`. You can get the `sha1` by using the `getMcHash` script.
+Call `minecraft` with a `version` and a `sha1`.
+You can leave `sha1` empty (`sha1 = ""`) and nix will tell you what to use.
 Example:
-```sh
-$ nix run -f path/to/default.nix getMcHash 1.12.2
-f07e0f1228f79b9b04313fc5640cd952474ba6f5
-```
 Save as `myminecraft.nix`:
 ```nix
 let
@@ -32,7 +29,7 @@ Call `minecraftForge` with a `version`, `mcSha1`, `hash`, and `mods`.
 You can get the version on this site: https://files.minecraftforge.net/net/minecraftforge/forge/.
 
 `mcSha1` is the same as `sha1` for vanilla.
-You can leave `hash` empty and nix will tell you what to use.
+You can leave `hash` empty (`hash = ""`) and nix will tell you what to use.
 
 Example:
 Save as `myminecraft.nix`:
@@ -43,27 +40,11 @@ in
 minecraftForge {
   version = "1.12.2-14.23.5.2855";
   mcSha1 = "f07e0f1228f79b9b04313fc5640cd952474ba6f5";
-  hash = "";
+  hash = "sha256-GPNLYZA+4fIZunpXTbp5zGqg6ZHK/QqTWyLmzPIRuYs=";
 }
 ```
 ```sh
 $ nix run -f myminecraft.nix . NixDude ./mygamedir
-error: hash mismatch in fixed-output derivation '/nix/store/m50zdpi4iywmpa1839kmmkj4s5a9gl2w-forge-1.12.2-14.23.5.2855-installer.jar.drv':
-         specified: sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
-            got:    sha256-x/vHOOXwdi6KbSJdmF2chaN2TI3dxq6a+4EpA63KX8k=
-```
-```nix
-let
-  inherit (import ./path/to/default.nix {}) minecraftForge curseforgeMod;
-in
-minecraftForge {
-  version = "1.12.2-14.23.5.2855";
-  mcSha1 = "f07e0f1228f79b9b04313fc5640cd952474ba6f5";
-  hash = "sha256-x/vHOOXwdi6KbSJdmF2chaN2TI3dxq6a+4EpA63KX8k=";
-}
-```
-```sh
-$ nix run -f myminecraft.nix . NixDude ./mygamedir # it works now
 ```
 Let's add some mods!
 For every mod, call `curseforgeMod` with `projectId`, `fileId`, and `hash`. (I used the nix builtin `map` here to be more concise)
@@ -71,6 +52,8 @@ For every mod, call `curseforgeMod` with `projectId`, `fileId`, and `hash`. (I u
 You can get the `projectId` on the curseforge description page, on the right (example: https://www.curseforge.com/minecraft/mc-mods/jei).
 
 The `fileId` is in the download link for that specific version. (example download link: https://www.curseforge.com/minecraft/mc-mods/jei/download/3043174)
+
+You can also just `fetchurl` any `.jar` file.
 
 Again, leave the hash empty to have nix tell you.
 ```nix
@@ -80,7 +63,7 @@ in
 minecraftForge {
   version = "1.12.2-14.23.5.2855";
   mcSha1 = "f07e0f1228f79b9b04313fc5640cd952474ba6f5";
-  hash = "sha256-x/vHOOXwdi6KbSJdmF2chaN2TI3dxq6a+4EpA63KX8k=";
+  hash = "sha256-GPNLYZA+4fIZunpXTbp5zGqg6ZHK/QqTWyLmzPIRuYs=";
   mods = map curseforgeMod [
     # JEI
     {
@@ -112,10 +95,45 @@ minecraftFtbModpack {
   version = 2059; # 3.5.0
   hash = "sha256-9dN7YrKWHdS97gMQGQbNMVjOBMNMg36qMMot47OthAw=";
   mcSha1 = "f07e0f1228f79b9b04313fc5640cd952474ba6f5";
-  forgeHash = "sha256-3Z4QA7WbxCYJxvzReb4VfxcyCt9WzHL0z64FMxzk6nk=";
+  forgeHash = "sha256-GPNLYZA+4fIZunpXTbp5zGqg6ZHK/QqTWyLmzPIRuYs=";
 }
 ```
 Note: both downloading and starting modpacks takes a long time, be patient!
+
+### Fabric
+Call `minecraftFabric`. Don't forget to add the Fabric API to your list of mods,
+you'll probably need it!
+```nix
+let
+  inherit (import ./path/to/default.nix {}) minecraftFabric;
+in
+minecraftFabric {
+  mcVersion = "1.16.5";
+  fabricVersion = "0.12.5";
+  mcSha1 = "66935fe3a8f602111a3f3cba9867d3fd6d80ef47";
+  hash = "sha256-usLRVAnPWR4+RUSXcTL43cV3JnEtIcTysYdCppL0jxM=";
+  mods = map curseforgeMod [
+    # Fabric API
+    {
+      projectId = 306612;
+      fileId = 3516413;
+      hash = "sha256-PfjdUD81qgrJ+ritn5o2n9/QsatUSvGaPWJtlI+0WGw=";
+    }
+    # Cloth Config
+    {
+      projectId = 319057;
+      fileId = 3521274;
+      hash = "sha256-R5LjfYnIEKCEoJ3jGgxbI6ArhhSTyVK4c/CccsfcnUw=";
+    }
+    # REI
+    {
+      projectId = 310111;
+      fileId = 3337658;
+      hash = "sha256-HMQ55cGxMnL+BHvG/IkbLiMcFuL1wEBmotip3E//aaU=";
+    }
+  ];
+}
+```
 
 ### LiteLoader
 Works similarly to forge, but instead of the version, use the url of the **jar file**
@@ -127,7 +145,7 @@ in
 minecraftLiteloader {
   url = "http://dl.liteloader.com/redist/1.10.2/liteloader-installer-1.10.2-00.jar";
   mcSha1 = "a86a4eaacfee738c8d609baf6d414175f94c26f6";
-  hash = "sha256-PXSSqIB5WfoPXdnHOFDwqhV3oBG0acc+mTAqZ09Xa9M=";
+  hash = "sha256-OB5C71sl52XMIOtmuySYIoF31NLZEP/yfSPg0aQqtgU=";
   mods = map curseforgeMod [
     # Armors HUD Revived
     {

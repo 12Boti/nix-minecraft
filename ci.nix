@@ -3,8 +3,6 @@
 }:
 with import ./. { };
 {
-  inherit getMcHash;
-
   forge10 = minecraftForge {
     version = "1.10.2-12.18.3.2511";
     mcSha1 = "a86a4eaacfee738c8d609baf6d414175f94c26f6";

@@ -19,8 +19,6 @@
 , lib ? pkgs.lib
 }:
 {
-  getMcHash = import ./src/getmchash.nix { inherit pkgs lib; };
-
   inherit (import ./src/minecraft.nix { inherit pkgs lib; }) minecraft;
 
   minecraftForge = import ./src/forge.nix { inherit pkgs lib; };
