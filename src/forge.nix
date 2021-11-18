@@ -16,46 +16,78 @@
 { pkgs, lib ? pkgs.lib }@inputs:
 let
   inherit (import ./minecraft.nix inputs) getMc minecraftFromPkg;
-  inherit (import ./common.nix inputs) mergePkgs fixOldPkg;
+  inherit (import ./common.nix inputs) mergePkgs fixedPkg normalizePkg urlPathFromLibraryName;
 in
 { version, mcSha1, hash, mods ? [ ], extraGamedirFiles ? null }:
 let
-  installer = pkgs.fetchurl {
+  installer = builtins.fetchurl {
     url = "https://maven.minecraftforge.net/net/minecraftforge/forge/${version}/forge-${version}-installer.jar";
-    inherit hash;
   };
 
   forgeJar = pkgs.runCommand "forge.jar" { } ''
     ${pkgs.jre}/bin/java -jar ${installer} --extract
     cp *.jar $out
   '';
-  pkg =
+
+  forgePkgFile = pkgs.runCommand "forge-pkg.json" { } ''
+    files="$(${pkgs.unzip}/bin/unzip -Z -1 ${installer})"
+    if [[ "$files" =~ "version.json" ]]
+    then
+      ${pkgs.unzip}/bin/unzip -p ${installer} version.json > $out
+    else
+      ${pkgs.unzip}/bin/unzip -p ${forgeJar} version.json > $out
+    fi
+  '';
+
+  # forge sometimes has wrong hashes for packages, here are the correct ones
+  correctHashes = {
+    "org.scala-lang.plugins:scala-continuations-library_2.11:1.0.2" =
+      "sha1-DlF8U6fprNaxZoxaNezLqjurmqw=";
+    "org.scala-lang.plugins:scala-continuations-plugin_2.11.1:1.0.2" =
+      "sha1-82GjKDRSxX+jDB7mlEiZXeI8YPc=";
+  };
+
+  fixLib = l:
+    if lib.hasPrefix "net.minecraftforge:forge" l.name
+    then { inherit (l) name; type = "jar"; file = forgeJar; }
+    else if ! l ? url
+    then
+      (
+        if lib.any (x: lib.hasPrefix x l.name) [
+          "net.minecraft:launchwrapper"
+          "lzma:lzma"
+          "java3d:vecmath"
+        ]
+        then {
+          url = "https://libraries.minecraft.net/" + urlPathFromLibraryName l.name;
+        } // l
+        else {
+          url = "https://maven.minecraftforge.net/" + urlPathFromLibraryName l.name;
+        } // l
+      )
+    else if correctHashes ? ${l.name}
+    then l // { sha1 = correctHashes.${l.name}; }
+    else l;
+
+  forgePkgImpure =
     let
-      versionJsonFile = pkgs.runCommand "forge-version.json" { } ''
-        files="$(${pkgs.unzip}/bin/unzip -Z -1 ${installer})"
-        if [[ "$files" =~ "version.json" ]]
-        then
-          ${pkgs.unzip}/bin/unzip -p ${installer} version.json > $out
-        else
-          f=$(echo "$files" | grep -o '^forge-.\+-universal\.jar$')
-          if [[ -n "$f" ]]
-          then
-            ${pkgs.unzip}/bin/unzip ${installer} "$f"
-            ${pkgs.unzip}/bin/unzip -p "$f" version.json > $out
-          else
-            echo "error: version.json cannot be found" >&2
-            false
-          fi
-        fi
-      '';
-      forge = fixOldPkg (builtins.fromJSON (builtins.readFile versionJsonFile));
-      mc = getMc { version = forge.inheritsFrom; sha1 = mcSha1; };
+      json = builtins.fromJSON (builtins.readFile forgePkgFile);
+      pkg = normalizePkg json;
     in
-    mergePkgs [ forge mc ];
+    pkg // { libraries = map fixLib pkg.libraries; };
+
+  forgePkg = fixedPkg {
+    pkg = forgePkgImpure;
+    extraDrvs = [ installer ];
+    inherit hash;
+  };
+
+  mcPkg = getMc { version = forgePkg.inheritsFrom; sha1 = mcSha1; };
+
+  pkg = mergePkgs [ forgePkg mcPkg ];
 in
 minecraftFromPkg {
   inherit pkg;
-  extraJars = [ forgeJar ];
   extraGamedirFiles = pkgs.symlinkJoin {
     name = "extra-gamedir";
     paths =

@@ -30,4 +30,6 @@
   minecraftFtbModpack = import ./src/ftb.nix { inherit pkgs lib; };
 
   minecraftLiteloader = import ./src/liteloader.nix { inherit pkgs lib; };
+
+  minecraftFabric = import ./src/fabric.nix { inherit pkgs lib; };
 }

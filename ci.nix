@@ -8,12 +8,12 @@ with import ./. { };
   forge10 = minecraftForge {
     version = "1.10.2-12.18.3.2511";
     mcSha1 = "a86a4eaacfee738c8d609baf6d414175f94c26f6";
-    hash = "sha256-0+GVE5esm0qCYojPmh6YMYLvhA3nJn5Ut1cdJoNvv4k=";
+    hash = "sha256-DFB1b0lcYSOJQ2uRN0gVoNkWxNFf4Bb077PbRNnlFkI=";
   };
   forge12 = minecraftForge {
     version = "1.12.2-14.23.5.2855";
     mcSha1 = "f07e0f1228f79b9b04313fc5640cd952474ba6f5";
-    hash = "sha256-x/vHOOXwdi6KbSJdmF2chaN2TI3dxq6a+4EpA63KX8k=";
+    hash = "sha256-GPNLYZA+4fIZunpXTbp5zGqg6ZHK/QqTWyLmzPIRuYs=";
     mods = map curseforgeMod [
       # JEI
       {
@@ -26,7 +26,7 @@ with import ./. { };
   liteloader10 = minecraftLiteloader {
     url = "http://dl.liteloader.com/redist/1.10.2/liteloader-installer-1.10.2-00.jar";
     mcSha1 = "a86a4eaacfee738c8d609baf6d414175f94c26f6";
-    hash = "sha256-PXSSqIB5WfoPXdnHOFDwqhV3oBG0acc+mTAqZ09Xa9M=";
+    hash = "sha256-OB5C71sl52XMIOtmuySYIoF31NLZEP/yfSPg0aQqtgU=";
     mods = map curseforgeMod [
       # Armors HUD Revived
       {
@@ -39,12 +39,38 @@ with import ./. { };
   liteloader12 = minecraftLiteloader {
     url = "http://jenkins.liteloader.com/job/LiteLoaderInstaller%201.12.2/lastSuccessfulBuild/artifact/build/libs/liteloader-installer-1.12.2-00-SNAPSHOT.jar";
     mcSha1 = "f07e0f1228f79b9b04313fc5640cd952474ba6f5";
-    hash = "sha256-KLJuE5ey/dxaDkO3mkS2Eink0m5qV/Ti6XLG5I1OcPU=";
+    hash = "sha256-ehZd0+ELNegsq8NdkX7pJYg03MXmi1XriVxuqze0Cps=";
     mods = map pkgs.fetchurl [
       # Extended Hotbar
       {
         url = "https://github.com/DenWav/ExtendedHotbar/releases/download/1.2.0/mod-extendedhotbar-1.2.0-mc1.12.2.litemod";
         hash = "sha256-CyB7jypxXq41wAfb/t1RCsxaS8uZZjAl/h531osq0Fc=";
+      }
+    ];
+  };
+  fabric16 = minecraftFabric {
+    mcVersion = "1.16.5";
+    fabricVersion = "0.12.5";
+    mcSha1 = "66935fe3a8f602111a3f3cba9867d3fd6d80ef47";
+    hash = "sha256-usLRVAnPWR4+RUSXcTL43cV3JnEtIcTysYdCppL0jxM=";
+    mods = map curseforgeMod [
+      # Fabric API
+      {
+        projectId = 306612;
+        fileId = 3516413;
+        hash = "sha256-PfjdUD81qgrJ+ritn5o2n9/QsatUSvGaPWJtlI+0WGw=";
+      }
+      # Cloth Config
+      {
+        projectId = 319057;
+        fileId = 3521274;
+        hash = "sha256-R5LjfYnIEKCEoJ3jGgxbI6ArhhSTyVK4c/CccsfcnUw=";
+      }
+      # REI
+      {
+        projectId = 310111;
+        fileId = 3337658;
+        hash = "sha256-HMQ55cGxMnL+BHvG/IkbLiMcFuL1wEBmotip3E//aaU=";
       }
     ];
   };
@@ -70,13 +96,13 @@ with import ./. { };
     version = 123;
     hash = "sha256-rIK9l8q/WSfaf9nRfDt5A/vTS7Zx+VTPC69JqGHETH4=";
     mcSha1 = "a86a4eaacfee738c8d609baf6d414175f94c26f6";
-    forgeHash = "sha256-0+GVE5esm0qCYojPmh6YMYLvhA3nJn5Ut1cdJoNvv4k=";
+    forgeHash = "sha256-DFB1b0lcYSOJQ2uRN0gVoNkWxNFf4Bb077PbRNnlFkI=";
   };
   modpack12 = minecraftFtbModpack {
     id = 35;
     version = 2059;
     hash = "sha256-9dN7YrKWHdS97gMQGQbNMVjOBMNMg36qMMot47OthAw=";
     mcSha1 = "f07e0f1228f79b9b04313fc5640cd952474ba6f5";
-    forgeHash = "sha256-3Z4QA7WbxCYJxvzReb4VfxcyCt9WzHL0z64FMxzk6nk=";
+    forgeHash = "sha256-GPNLYZA+4fIZunpXTbp5zGqg6ZHK/QqTWyLmzPIRuYs=";
   };
 }

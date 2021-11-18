@@ -14,6 +14,10 @@
 # along with nix-minecraft.  If not, see <https://www.gnu.org/licenses/>.
 
 { pkgs, lib ? pkgs.lib }:
+let
+  inherit (lib) splitString;
+  inherit (builtins) concatStringsSep head tail;
+in
 rec {
   os =
     let
@@ -50,6 +54,8 @@ rec {
       )
     );
 
+  filterMap = f: xs: lib.remove null (map f xs);
+
   fetchJson = { url, sha1 ? "", sha256 ? "", hash ? "" }:
     let
       file = pkgs.fetchurl {
@@ -65,42 +71,152 @@ rec {
         # concat lists, replace other values
         if lib.all lib.isList values
         then lib.concatLists values
+        else if lib.all lib.isAttrs values
+        then mergePkgs values
         else lib.head values
     );
 
-  fixOldPkg =
-    let
-      knownLibs = import ./knownlibs.nix;
+  urlPathFromLibraryName = name:
+    let parts = splitString ":" name;
     in
-    pkg: pkg //
-      {
-        libraries = map
-          (l:
-            if l ? downloads.artifact
-            then l
-            else if knownLibs ? ${l.name}
-            then knownLibs.${l.name}
-            else if l ? url && l ? checksums
-            then {
-              inherit (l) name;
-              downloads.artifact =
-                let
-                  inherit (lib) splitString;
-                  inherit (builtins) concatStringsSep head tail;
-                  parts = splitString ":" l.name;
-                in
-                {
-                  url =
-                    l.url
-                      + concatStringsSep "/" ((splitString "." (head parts)) ++ (tail parts))
-                      + "/"
-                      + concatStringsSep "-" (tail parts)
-                      + ".jar";
-                  sha1 = head l.checksums;
-                };
-            }
-            else { }
-          )
-          pkg.libraries;
+    concatStringsSep "/" ((splitString "." (head parts)) ++ (tail parts))
+    + "/"
+    + concatStringsSep "-" (tail parts)
+    + ".jar";
+
+  # Makes a fixed-output derivation from a list of impure derivations, then
+  # returns a list of paths to the new files.
+  makeFOD = { drvs, hash }:
+    let
+      name = drv:
+        builtins.head (builtins.match "/nix/store/[0-9a-z]+-(.+)" (toString drv));
+      FOD = pkgs.runCommand
+        "makeFOD"
+        {
+          outputHashMode = "recursive";
+          outputHashAlgo = "sha256";
+          outputHash = hash;
+        }
+        ''
+          mkdir -p $out
+          ${
+            lib.concatMapStringsSep
+            "\n"
+            (x: "cp ${x} $out/${name x}")
+            drvs
+          }
+        '';
+    in
+    {
+      drv = FOD;
+      list = map (x: "${FOD}/${name x}") drvs;
+    };
+
+  # Fetches multiple urls with only one hash. Returns a list of files.
+  fetchMultiple = { urls, extraDrvs ? [ ], hash }:
+    let
+      all = makeFOD {
+        inherit hash;
+        drvs = extraDrvs ++ map (url: builtins.fetchurl { inherit url; }) urls;
       };
+      extraCount = builtins.length extraDrvs;
+    in
+    {
+      inherit (all) drv;
+      list = lib.drop extraCount all.list;
+    };
+
+  fixedLibs = { libs, extraDrvs ? [ ], hash }:
+    let
+      partitioned = lib.partition (l: l ? sha1 || l ? file) libs;
+      withHash = partitioned.right;
+      withoutHashFiles = fetchMultiple {
+        inherit hash extraDrvs;
+        urls = map (l: l.url) partitioned.wrong;
+      };
+      withoutHash = lib.zipListsWith
+        (l: file: l // {
+          inherit file;
+        })
+        partitioned.wrong
+        withoutHashFiles.list;
+    in
+    {
+      inherit (withoutHashFiles) drv;
+      list = withHash ++ withoutHash;
+    };
+
+  fixedPkg = { pkg, extraDrvs ? [ ], hash }:
+    let fixed = fixedLibs {
+      libs = pkg.libraries;
+      inherit extraDrvs hash;
+    };
+    in
+    pkg // {
+      libraries = fixed.list;
+      extraDeps = (pkg.extraDeps or [ ]) ++ [ fixed.drv ];
+    };
+
+  normalizePkg = pkg:
+    pkg // {
+      libraries = filterMap
+        (l:
+          if l ? rules && ! isAllowed l.rules
+          then null
+          else
+            (
+              if l ? natives
+              then
+                (
+                  if l.natives ? ${os}
+                  then
+                    let
+                      classifier = l.natives.${os};
+                      a = l.downloads.classifiers.${classifier};
+                    in
+                    {
+                      name = l.name;
+                      type = "native";
+                      inherit (a) url sha1;
+                    }
+                  else null
+                )
+              else {
+                name = l.name;
+                type = "jar";
+              }
+              // lib.optionalAttrs
+                (l ? downloads.artifact.url && l.downloads.artifact.url != "")
+                {
+                  inherit (l.downloads.artifact) url;
+                }
+              // lib.optionalAttrs
+                (l ? url && l.url != "")
+                {
+                  url = l.url + urlPathFromLibraryName l.name;
+                }
+              // lib.optionalAttrs
+                (l ? downloads.artifact.sha1)
+                {
+                  inherit (l.downloads.artifact) sha1;
+                }
+              // lib.optionalAttrs
+                (l ? checksums)
+                {
+                  sha1 = head l.checksums;
+                }
+              // lib.optionalAttrs
+                (l ? file)
+                {
+                  inherit (l) file;
+                }
+            )
+        )
+        pkg.libraries
+      ++ lib.optional (pkg ? downloads.client) {
+        name = "net.minecraft.client";
+        type = "jar";
+        inherit (pkg.downloads.client) url sha1;
+      };
+    };
 }

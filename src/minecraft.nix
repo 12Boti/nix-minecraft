@@ -15,16 +15,34 @@
 
 { pkgs, lib ? pkgs.lib }@inputs:
 let
-  inherit (import ./common.nix inputs) os isAllowed fetchJson;
+  inherit (import ./common.nix inputs) os isAllowed fetchJson normalizePkg;
   inherit (import ./downloaders.nix inputs) downloadLibs downloadAssets;
 in
 rec {
   # downloads information about a specific version of minecraft
-  getMc = { version, sha1 }:
-    fetchJson {
-      url = "https://launchermeta.mojang.com/v1/packages/${sha1}/${version}.json";
-      inherit sha1;
-    };
+  getMc = { version, sha1 ? "" }:
+    if sha1 != ""
+    then
+      normalizePkg
+        (
+          fetchJson
+            {
+              url = "https://launchermeta.mojang.com/v1/packages/${sha1}/${version}.json";
+              inherit sha1;
+            }
+        )
+    else
+      let
+        file = builtins.fetchurl {
+          url = "https://launchermeta.mojang.com/mc/game/version_manifest_v2.json";
+        };
+        json = builtins.fromJSON (builtins.readFile file);
+        elem = lib.findFirst
+          (x: x.id == version)
+          (throw "minecraft version not found: ${version}")
+          json.versions;
+      in
+      throw "minecraft hash not specified, use ${elem.sha1}";
 
   minecraftFromPkg =
     {
@@ -55,25 +73,6 @@ rec {
       };
 
       classpath = lib.concatStringsSep ":" javaLibs;
-      javaLibsDir =
-        let
-          script = lib.concatStringsSep "\n"
-            (
-              map
-                (
-                  x: ''
-                    mkdir -p $out/${dirOf x.passthru.path}
-                    ln -sf ${x} $out/${x.passthru.path}
-                  ''
-                )
-                (
-                  builtins.filter
-                    (x: x.passthru ? path)
-                    javaLibs
-                )
-            );
-        in
-        pkgs.runCommand "symlink-jars" { } script;
 
       arguments =
         pkg.minecraftArguments
@@ -147,10 +146,11 @@ rec {
         dontConfigure = true;
         dontBuild = true;
 
+        buildInputs = pkg.extraDeps or [ ];
+
         installPhase = ''
           echo setting up environment
           mkdir -p $out
-          ln -s ${javaLibsDir} $out/libraries
           ln -s ${nativeLibsDir} $out/natives
           ln -s ${assets} $out/assets
           ${lib.optionalString

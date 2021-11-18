@@ -18,35 +18,27 @@ let
   inherit (import ./minecraft.nix inputs) getMc minecraftFromPkg;
   inherit (import ./common.nix inputs) mergePkgs normalizePkg fixedPkg;
 in
-{ url, mcSha1, hash, mods ? [ ], extraGamedirFiles ? null }:
+{ mcVersion, fabricVersion, mcSha1, hash, mods ? [ ], extraGamedirFiles ? null }:
 let
-  installer = builtins.fetchurl { inherit url; };
+  fabricJsonFile = builtins.fetchurl {
+    url = "https://meta.fabricmc.net/v2/versions/loader/${mcVersion}/${fabricVersion}/profile/json";
+  };
 
-  liteloaderPkgFile = pkgs.runCommand "liteloader-version.json" { } ''
-    ${pkgs.unzip}/bin/unzip -p ${installer} install_profile.json > $out
-  '';
-
-  liteloaderPkgImpure = lib.pipe liteloaderPkgFile [
+  fabricPkgImpure = lib.pipe fabricJsonFile [
     builtins.readFile
     builtins.fromJSON
-    (x: x.versionInfo)
-    (x: x // {
-      libraries = map
-        (l: { url = "https://libraries.minecraft.net/"; } // l)
-        x.libraries;
-    })
     normalizePkg
   ];
 
-  liteloaderPkg = fixedPkg {
-    pkg = liteloaderPkgImpure;
-    extraDrvs = [ installer ];
+  fabricPkg = fixedPkg {
+    pkg = fabricPkgImpure;
+    extraDrvs = [ fabricJsonFile ];
     inherit hash;
   };
 
-  mcPkg = getMc { version = liteloaderPkg.inheritsFrom; sha1 = mcSha1; };
+  mcPkg = getMc { version = fabricPkg.inheritsFrom; sha1 = mcSha1; };
 
-  pkg = mergePkgs [ liteloaderPkg mcPkg ];
+  pkg = mergePkgs [ fabricPkg mcPkg ];
 in
 minecraftFromPkg {
   inherit pkg;

@@ -26,55 +26,29 @@ in
         map
           (
             javaLib:
-            let
-              a = javaLib.downloads.artifact;
-            in
-            pkgs.fetchurl
-              {
-                inherit (a) url sha1;
-              }
-            // lib.optionalAttrs (a ? path) {
-              passthru = {
-                path = a.path;
-              };
+            # check if already downloaded
+            if javaLib ? file then javaLib.file else
+            pkgs.fetchurl {
+              inherit (javaLib) url sha1;
             }
-
           )
-          (
-            builtins.filter
-              (
-                x:
-                x ? downloads.artifact
-                && x.downloads.artifact.url != ""
-                && (x ? rules -> isAllowed x.rules)
-              )
-              libs
-          )
+          (builtins.filter (x: x.type == "jar") libs)
         ++ [ (pkgs.fetchurl { inherit (mc.downloads.client) url sha1; }) ];
       nativeLibs =
         map
           (
             nativeLib:
             let
-              classifier = nativeLib.natives.${os};
-              a = nativeLib.downloads.classifiers.${classifier};
-              zip =
-                pkgs.fetchurl {
-                  inherit (a) url sha1;
-                };
+              zip = pkgs.fetchurl {
+                inherit (nativeLib) url sha1;
+              };
             in
             pkgs.runCommand "unpack-zip" { } ''
               ${pkgs.unzip}/bin/unzip ${zip} -d $out
               rm -rf $out/META-INF
             ''
           )
-          (
-            builtins.filter
-              (
-                x: x ? natives.${os} && (x ? rules -> isAllowed x.rules)
-              )
-              libs
-          );
+          (builtins.filter (x: x.type == "native") libs);
     in
     { inherit javaLibs nativeLibs; };
 
