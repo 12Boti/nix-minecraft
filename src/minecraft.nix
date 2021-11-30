@@ -94,6 +94,7 @@ rec {
       jre = {
         "8" = pkgs.jre8;
         "16" = pkgs.jre;
+        "17" = pkgs.jre;
       }.${toString pkg.javaVersion.majorVersion};
       runner = pkgs.writeShellScript "minecraft-runner" ''
         out='%OUT%'
