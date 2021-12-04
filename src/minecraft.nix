@@ -185,7 +185,7 @@ rec {
 
   minecraft =
     { version
-    , sha1 # use `getMcHash <version>`
+    , sha1
     , extraGamedirFiles ? null
     }:
     minecraftFromPkg {
