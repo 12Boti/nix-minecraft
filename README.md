@@ -162,6 +162,29 @@ minecraftLiteloader {
 }
 ```
 
+## [home-manager](https://github.com/nix-community/home-manager) module
+You can import `home-manager.nix` to help you manage multiple minecraft installations.
+Use it like this:
+```nix
+let
+  inherit (import ./path/to/default.nix {}) minecraft;
+in
+{
+  programs.minecraft = {
+    defaultUsername = "NixDude";
+    versions = {
+      "my-1.18-installation" = minecraft {
+        version = "1.18";
+        sha1 = "cdd1c0f485c0ea5a5aae60d4e62d316b2141f227";
+      };
+    };
+  };
+}
+```
+This will create a `.minecraft/my-1.18-installation/run` executable in your home
+directory which you can start.
+Your worlds and other files will be stored at `.minecraft/my-1.18-installation/gamedir`.
+
 ## License
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
