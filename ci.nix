@@ -70,6 +70,19 @@ with import ./. { };
         fileId = 3337658;
         hash = "sha256-HMQ55cGxMnL+BHvG/IkbLiMcFuL1wEBmotip3E//aaU=";
       }
+    ] ++ map modrinthMod [
+      # Sodium
+      {
+        projectId = "AANobbMI";
+        version = "mc1.16.5-0.2.0";
+        hash = "sha256-HiBg1M+OPZHbBa95t/KTnx1b0bnLrLJ3MKqeI7NGgy0=";
+      }
+      # Mod Menu
+      {
+        projectId = "mOgUt4GM";
+        version = "1.16.22";
+        hash = "sha256-bYP08vpv/HbEGGISW6ij0asnfZk1nhn8HUj/A7EV81A=";
+      }
     ];
   };
   vanilla10 = minecraft {
@@ -84,10 +97,15 @@ with import ./. { };
     version = "1.16";
     sha1 = "5a157ca1ae150c3acb10afdfe714ba34bf322315";
   };
-  mod = curseforgeMod {
+  curseforge = curseforgeMod {
     projectId = 238222;
     fileId = 3448057;
     hash = "sha256-Q4j9n1sZ2ccjz9DLBznVjvmZlNwNHYeaG1Tr1Zh38go=";
+  };
+  modrinth = modrinthMod {
+    projectId = "AANobbMI";
+    version = "mc1.16.5-0.2.0";
+    hash = "sha256-HiBg1M+OPZHbBa95t/KTnx1b0bnLrLJ3MKqeI7NGgy0=";
   };
   modpack10 = minecraftFtbModpack {
     id = 25;

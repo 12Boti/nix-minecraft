@@ -53,6 +53,11 @@ You can get the `projectId` on the curseforge description page, on the right (ex
 
 The `fileId` is in the download link for that specific version. (example download link: https://www.curseforge.com/minecraft/mc-mods/jei/download/3043174)
 
+If you want to use [modrinth](https://modrinth.com/), call `modrinthMod` with
+a `projectId` from the right side of the mod page (example: https://modrinth.com/mod/sodium),
+a `version` from the version column of the versions page (example: https://modrinth.com/mod/sodium/versions),
+and a `hash`.
+
 You can also just `fetchurl` any `.jar` file.
 
 Again, leave the hash empty to have nix tell you.
