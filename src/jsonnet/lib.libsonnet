@@ -94,7 +94,10 @@ local os = 'linux';
        then { javaVersion: pkg.javaVersion.majorVersion }
        else {})
     + (if 'minecraftArguments' in pkg
-       then { arguments: std.split(pkg.minecraftArguments, ' ') }
+       then {
+         arguments: std.split(pkg.minecraftArguments, ' '),
+         overrideArguments: true,
+       }
        else {})
     + (if 'arguments' in pkg
        then {
@@ -107,6 +110,7 @@ local os = 'linux';
 
            for arg in (pkg.arguments.game + pkg.arguments.jvm)
          ]),
+         overrideArguments: false,
        }
        else {})
     + (if 'inheritsFrom' in pkg
@@ -117,11 +121,11 @@ local os = 'linux';
        else {}),
 
   download_pkg(pkg, out_path)::
-    local get_path = function(name) out_path + '/' + name;
+    local get_path = function(name) std.strReplace(name, ':', '__');
     {
       'package.json': pkg {
         libraries: [
-          if 'sha1' in l || 'file' in l
+          if 'sha1' in l || 'path' in l
           then l
           else {
             name: l.name,
@@ -138,7 +142,7 @@ local os = 'linux';
           path: get_path(l.name),
         }
         for l in pkg.libraries
-        if !('sha1' in l || 'file' in l)
+        if !('sha1' in l || 'path' in l)
       ],
     },
 

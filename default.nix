@@ -22,7 +22,7 @@ let baseModules = [
   (import ./src/minecraft.nix)
   (import ./src/runners.nix)
   (import ./src/downloaders.nix)
-  # (import ./src/forge.nix)
+  (import ./src/forge.nix)
   # (import ./src/ftb.nix)
   # (import ./src/liteloader.nix)
   # (import ./src/fabric.nix)

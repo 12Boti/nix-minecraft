@@ -49,8 +49,8 @@ rec {
             jsonnet -J ${./jsonnet} --tla-str-file orig_str=${package} -o $out \
               ${./jsonnet/normalize.jsonnet}
           '';
-      mod = builtins.fromJSON (builtins.readFile normalized);
+      module = builtins.fromJSON (builtins.readFile normalized);
     in
     # tell nix what attrs to expect to avoid infinite recursion
-    { inherit (mod) arguments assets javaVersion libraries mainClass; };
+    { inherit (module) arguments assets javaVersion libraries mainClass; };
 }

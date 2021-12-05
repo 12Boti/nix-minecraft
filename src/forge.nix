@@ -13,91 +13,85 @@
 # You should have received a copy of the GNU General Public License
 # along with nix-minecraft.  If not, see <https://www.gnu.org/licenses/>.
 
-{ pkgs, lib ? pkgs.lib }@inputs:
+{ config, pkgs, lib, ... }:
 let
-  inherit (import ./minecraft.nix inputs) getMc minecraftFromPkg;
-  inherit (import ./common.nix inputs) mergePkgs fixedPkg normalizePkg urlPathFromLibraryName;
+  inherit (lib) mkOption mkOverride mkIf types;
+  cfg = config.forge;
+  versionStr = "${config.minecraft.version}-${cfg.version}";
 in
-{ version, mcSha1, hash, mods ? [ ], extraGamedirFiles ? null }:
-let
-  installer = builtins.fetchurl {
-    url = "https://maven.minecraftforge.net/net/minecraftforge/forge/${version}/forge-${version}-installer.jar";
+{
+  options.forge = {
+    version = mkOption {
+      default = null;
+      example = "14.23.5.2855";
+      description = "The version of forge to use.";
+      type = types.nullOr types.nonEmptyStr;
+    };
+    hash = mkOption {
+      description = "The hash of the forge version.";
+      type = types.str;
+    };
   };
 
-  forgeJar = pkgs.runCommand "forge.jar" { } ''
-    ${pkgs.jre}/bin/java -jar ${installer} --extract
-    cp *.jar $out
-  '';
-
-  forgePkgFile = pkgs.runCommand "forge-pkg.json" { } ''
-    files="$(${pkgs.unzip}/bin/unzip -Z -1 ${installer})"
-    if [[ "$files" =~ "version.json" ]]
-    then
-      ${pkgs.unzip}/bin/unzip -p ${installer} version.json > $out
-    else
-      ${pkgs.unzip}/bin/unzip -p ${forgeJar} version.json > $out
-    fi
-  '';
-
-  # forge sometimes has wrong hashes for packages, here are the correct ones
-  correctHashes = {
-    "org.scala-lang.plugins:scala-continuations-library_2.11:1.0.2" =
-      "sha1-DlF8U6fprNaxZoxaNezLqjurmqw=";
-    "org.scala-lang.plugins:scala-continuations-plugin_2.11.1:1.0.2" =
-      "sha1-82GjKDRSxX+jDB7mlEiZXeI8YPc=";
-  };
-
-  fixLib = l:
-    if lib.hasPrefix "net.minecraftforge:forge" l.name
-    then { inherit (l) name; type = "jar"; file = forgeJar; }
-    else if ! l ? url
-    then
-      (
-        if lib.any (x: lib.hasPrefix x l.name) [
-          "net.minecraft:launchwrapper"
-          "lzma:lzma"
-          "java3d:vecmath"
-        ]
-        then {
-          url = "https://libraries.minecraft.net/" + urlPathFromLibraryName l.name;
-        } // l
-        else {
-          url = "https://maven.minecraftforge.net/" + urlPathFromLibraryName l.name;
-        } // l
-      )
-    else if correctHashes ? ${l.name}
-    then l // { sha1 = correctHashes.${l.name}; }
-    else l;
-
-  forgePkgImpure =
+  config =
     let
-      json = builtins.fromJSON (builtins.readFile forgePkgFile);
-      pkg = normalizePkg json;
+      package = pkgs.runCommand "forge-${cfg.version}"
+        {
+          nativeBuildInputs = with pkgs; [ jsonnet jre unzip jq curl ];
+          SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
+          outputHash = cfg.hash;
+          outputHashAlgo = "sha256";
+          outputHashMode = "recursive";
+        }
+        ''
+          curl -o installer.jar \
+            'https://maven.minecraftforge.net/net/minecraftforge/forge/${versionStr}/forge-${versionStr}-installer.jar'
+          
+          java -jar installer.jar --extract
+          forgeJar="forge-*.jar"
+
+          files="$(unzip -Z -1 installer.jar)"
+          if [[ "$files" =~ "version.json" ]]
+          then
+            unzip -p installer.jar version.json > orig.json
+          else
+            unzip -p $forgeJar version.json > orig.json
+          fi
+
+          mkdir -p $out
+
+          jsonnet -J ${./jsonnet} -m $out \
+            --tla-str-file orig_str=orig.json \
+            --tla-str out_path=$out \
+            ${./jsonnet/forge.jsonnet}
+          
+          jq -r '.[] | .url + " " + .path' < $out/downloads.json | \
+          while read url path
+          do
+            curl -o "$out/$path" "$url"
+          done
+
+          cp $forgeJar $out/forge.jar
+
+          rm $out/downloads.json
+        '';
+      module =
+        builtins.fromJSON
+          (builtins.readFile "${package}/package.json");
     in
-    pkg // { libraries = map fixLib pkg.libraries; };
-
-  forgePkg = fixedPkg {
-    pkg = forgePkgImpure;
-    extraDrvs = [ installer ];
-    inherit hash;
-  };
-
-  mcPkg = getMc { version = forgePkg.inheritsFrom; sha1 = mcSha1; };
-
-  pkg = mergePkgs [ forgePkg mcPkg ];
-in
-minecraftFromPkg {
-  inherit pkg;
-  extraGamedirFiles = pkgs.symlinkJoin {
-    name = "extra-gamedir";
-    paths =
-      lib.optional (extraGamedirFiles != null) extraGamedirFiles
-      ++ [
-        (
-          pkgs.linkFarm
-            "mods"
-            (map (m: { name = "mods/${m.name}"; path = m; }) mods)
-        )
-      ];
-  };
+    mkIf (cfg.version != null)
+      {
+        arguments =
+          if module.overrideArguments
+          then mkOverride 90 module.arguments
+          else module.arguments;
+        mainClass = mkOverride 90 module.mainClass;
+        libraries = map
+          (lib:
+            if lib ? path
+            then lib // { path = "${package}/${lib.path}"; }
+            else lib
+          )
+          module.libraries;
+      };
 }
