@@ -13,69 +13,112 @@
 # You should have received a copy of the GNU General Public License
 # along with nix-minecraft.  If not, see <https://www.gnu.org/licenses/>.
 
-{ pkgs, lib ? pkgs.lib }:
+{ config, pkgs, lib, ... }:
 let
-  inherit (import ./common.nix { inherit pkgs lib; }) os isAllowed;
+  inherit (lib) mkOption types;
 in
 {
-  # downloads the java and native libraries in the list
-  downloadLibs = mc:
-    let
-      libs = mc.libraries;
-      javaLibs =
-        map
-          (
-            javaLib:
-            # check if already downloaded
-            if javaLib ? file then javaLib.file else
-            pkgs.fetchurl {
-              inherit (javaLib) url sha1;
-            }
-          )
-          (builtins.filter (x: x.type == "jar") libs)
-        ++ [ (pkgs.fetchurl { inherit (mc.downloads.client) url sha1; }) ];
-      nativeLibs =
-        map
-          (
-            nativeLib:
-            let
-              zip = pkgs.fetchurl {
-                inherit (nativeLib) url sha1;
-              };
-            in
-            pkgs.runCommand "unpack-zip" { } ''
-              ${pkgs.unzip}/bin/unzip ${zip} -d $out
-              rm -rf $out/META-INF
-            ''
-          )
-          (builtins.filter (x: x.type == "native") libs);
-    in
-    { inherit javaLibs nativeLibs; };
 
-  downloadAssets = assetIndexInfo:
-    let
-      assetIndexFile = pkgs.fetchurl { inherit (assetIndexInfo) url sha1; };
-      assetIndex = builtins.fromJSON (builtins.readFile assetIndexFile);
-      objectScripts = lib.mapAttrsToList
-        (
-          object: { hash, size }:
-            let
-              shorthash = builtins.substring 0 2 hash;
-              asset = pkgs.fetchurl {
-                sha1 = hash;
-                url = "https://resources.download.minecraft.net/${shorthash}/${hash}";
-              };
-            in
-            ''
-              mkdir -p $out/objects/${shorthash}
-              ln -sf ${asset} $out/objects/${shorthash}/${hash}
-            ''
-        )
-        assetIndex.objects;
-      script = (lib.concatStringsSep "\n" objectScripts) + ''
-        mkdir -p $out/indexes
-        ln -s ${assetIndexFile} $out/indexes/${assetIndexInfo.id}.json
-      '';
-    in
-    pkgs.runCommand "symlink-assets" { } script;
+  options.libraries = mkOption {
+    type = types.listOf (types.submodule {
+      options = {
+        type = mkOption {
+          type = types.enum [ "jar" "native" ];
+        };
+        name = mkOption {
+          type = types.nonEmptyStr;
+        };
+        sha1 = mkOption {
+          default = null;
+          type = types.nullOr types.nonEmptyStr;
+        };
+        url = mkOption {
+          default = null;
+          type = types.nullOr types.nonEmptyStr;
+        };
+        path = mkOption {
+          default = null;
+          type = types.nullOr types.path;
+        };
+      };
+    });
+  };
+
+  options.assets = {
+    id = mkOption {
+      type = types.nonEmptyStr;
+    };
+    url = mkOption {
+      type = types.nonEmptyStr;
+    };
+    sha1 = mkOption {
+      type = types.nonEmptyStr;
+    };
+  };
+
+  options.downloaded = {
+    jars = mkOption {
+      type = types.listOf types.path;
+    };
+    natives = mkOption {
+      type = types.listOf types.path;
+    };
+    assets = mkOption {
+      type = types.path;
+    };
+  };
+
+  config.downloaded = {
+    jars = map
+      (
+        javaLib:
+        # check if already downloaded
+        if javaLib.path != null
+        then javaLib.path
+        else pkgs.fetchurl { inherit (javaLib) url sha1; }
+      )
+      (builtins.filter (x: x.type == "jar") config.libraries);
+    natives = map
+      (
+        nativeLib:
+        # check if already downloaded
+        let zip =
+          if nativeLib.path != null
+          then nativeLib.path
+          else pkgs.fetchurl { inherit (nativeLib) url sha1; };
+        in
+        pkgs.runCommand "unpack-zip" { } ''
+          ${pkgs.unzip}/bin/unzip ${zip} -d $out
+          rm -rf $out/META-INF
+        ''
+      )
+      (builtins.filter (x: x.type == "native") config.libraries);
+
+    assets =
+      let
+        assetIndexFile = pkgs.fetchurl { inherit (config.assets) url sha1; };
+        assetIndex = builtins.fromJSON (builtins.readFile assetIndexFile);
+        objectScripts = lib.mapAttrsToList
+          (
+            object: { hash, size }:
+              let
+                shorthash = builtins.substring 0 2 hash;
+                asset = pkgs.fetchurl {
+                  sha1 = hash;
+                  url = "https://resources.download.minecraft.net/${shorthash}/${hash}";
+                };
+              in
+              ''
+                mkdir -p $out/objects/${shorthash}
+                ln -sf ${asset} $out/objects/${shorthash}/${hash}
+              ''
+          )
+          assetIndex.objects;
+        script = (lib.concatStringsSep "\n" objectScripts) + ''
+          mkdir -p $out/indexes
+          ln -s ${assetIndexFile} $out/indexes/${config.assets.id}.json
+        '';
+      in
+      pkgs.runCommand "symlink-assets" { } script;
+  };
 }

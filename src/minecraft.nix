@@ -13,183 +13,44 @@
 # You should have received a copy of the GNU General Public License
 # along with nix-minecraft.  If not, see <https://www.gnu.org/licenses/>.
 
-{ pkgs, lib ? pkgs.lib }@inputs:
+{ config, pkgs, lib, ... }:
 let
-  inherit (import ./common.nix inputs) os isAllowed fetchJson normalizePkg;
-  inherit (import ./downloaders.nix inputs) downloadLibs downloadAssets;
+  inherit (lib) mkOption types;
+  cfg = config.minecraft;
 in
 rec {
-  # downloads information about a specific version of minecraft
-  getMc = { version, sha1 ? "" }:
-    if sha1 != ""
-    then
-      normalizePkg
-        (
-          fetchJson
-            {
-              url = "https://launchermeta.mojang.com/v1/packages/${sha1}/${version}.json";
-              inherit sha1;
-            }
-        )
-    else
-      let
-        file = builtins.fetchurl {
-          url = "https://launchermeta.mojang.com/mc/game/version_manifest_v2.json";
-        };
-        json = builtins.fromJSON (builtins.readFile file);
-        elem = lib.findFirst
-          (x: x.id == version)
-          (throw "minecraft version not found: ${version}")
-          json.versions;
-      in
-      throw "minecraft hash not specified, use ${elem.sha1}";
 
-  minecraftFromPkg =
-    {
-      # json containing information about this version of minecraft
-      pkg
-      # extra .jar files to add to classpath
-    , extraJars ? [ ]
-      # extra files to be copied to the game directory on launch
-    , extraGamedirFiles ? null
-      # run tests if true
-    , doCheck ? false
-    }:
-    let
-      assets = downloadAssets pkg.assetIndex;
-
-      downloaded = downloadLibs pkg;
-      inherit (downloaded) nativeLibs;
-      javaLibs = downloaded.javaLibs ++ extraJars;
-
-      nativeLibsDir = pkgs.symlinkJoin {
-        name = "minecraft-natives";
-        paths =
-          nativeLibs
-          ++ lib.optionals (os == "linux") [
-            "${pkgs.libpulseaudio}/lib"
-            "${pkgs.xlibs.libXxf86vm}/lib"
-          ];
-      };
-
-      classpath = lib.concatStringsSep ":" javaLibs;
-
-      arguments =
-        pkg.minecraftArguments
-          or
-          (
-            lib.concatStringsSep " " (
-              map
-                (
-                  x:
-                  if builtins.isString x then x
-                  else if isAllowed x.rules then
-                    if builtins.isList x.value then lib.concatStringsSep " " x.value
-                    else x.value
-                  else ""
-                )
-                (pkg.arguments.jvm ++ pkg.arguments.game)
-            )
-          );
-      jre = {
-        "8" = pkgs.jre8;
-        "16" = pkgs.jre;
-        "17" = pkgs.jre;
-      }.${toString pkg.javaVersion.majorVersion};
-      runner = pkgs.writeShellScript "minecraft-runner" ''
-        out='%OUT%'
-        usage="Usage: $0 <username> [<gamedir>]"
-        test $# -eq 0 && echo $usage && exit 1
-        test "$1" = "-h" -o "$1" = "--help" && echo $usage && exit 1
-        auth_player_name="$1"
-        version_name='${pkg.id}'
-        game_directory="''${2:-./gamedir}"
-        game_directory="$(realpath "$game_directory")"
-        mkdir -p "$game_directory"
-        cd "$game_directory"
-        ${lib.optionalString
-        (extraGamedirFiles != null)
-        ''
-          if [ -d "$game_directory/mods" -a -d "${extraGamedirFiles}/mods" ]; then
-            diff -q "$game_directory/mods" "${extraGamedirFiles}/mods" \
-              || echo "warning: mods folder already exists, remove it in case of conflicts and try again"
-          fi
-          echo "copying files to game directory ($game_directory)"
-          ${pkgs.rsync}/bin/rsync -rL --ignore-existing --chmod=755 --info=skip2,name ${extraGamedirFiles}/ "$game_directory"
-        ''}
-        assets_root="$out/assets"
-        assets_index_name='${pkg.assetIndex.id}'
-        auth_uuid='1234'
-        auth_access_token='REPLACEME'
-        user_type='mojang'
-        version_type='${pkg.type}'
-        # clear all other environment variables (yay purity)
-        # keep:
-        #  DISPLAY and XAUTHORITY for graphics (x11)
-        #  XDG_RUNTIME_DIR for sound (pulseaudio?)
-        exec env -i \
-          LD_LIBRARY_PATH="$out/natives" \
-          DISPLAY="$DISPLAY" XAUTHORITY="$XAUTHORITY" \
-          XDG_RUNTIME_DIR="$XDG_RUNTIME_DIR" \
-          ${jre}/bin/java \
-          -Djava.library.path="$out/natives" \
-          -classpath '${classpath}' \
-          '${pkg.mainClass}' \
-          ${arguments}
-      '';
-    in
-    pkgs.stdenvNoCC.mkDerivation
-      {
-        pname = "minecraft";
-        version = pkg.id;
-
-        dontUnpack = true;
-        dontConfigure = true;
-        dontBuild = true;
-
-        buildInputs = pkg.extraDeps or [ ];
-
-        installPhase = ''
-          echo setting up environment
-          mkdir -p $out
-          ln -s ${nativeLibsDir} $out/natives
-          ln -s ${assets} $out/assets
-          ${lib.optionalString
-          (extraGamedirFiles != null)
-          "ln -s ${extraGamedirFiles} $out/gamedir"}
-          echo creating runner script
-          mkdir -p $out/bin
-          sed "s|%OUT%|$out|" ${runner} > $out/bin/minecraft
-          chmod +x $out/bin/minecraft
-        '';
-
-        doCheck = false;
-        doInstallCheck = doCheck;
-        installCheckPhase = ''
-          echo running checks
-          ${pkgs.xdummy}/bin/xdummy :3 \
-            -ac -nolisten unix +extension GLX +xinerama +extension RANDR +extension RENDER &
-          XPID=$!
-          sleep 1
-          echo running minecraft
-          export DISPLAY=:3
-          $out/bin/minecraft NixDude ./gamedir &
-          MCPID=$!
-          # wait until window visible
-          timeout 5s ${pkgs.xdotool}/bin/xdotool search --sync --onlyvisible --pid $MCPID
-          ${pkgs.xdotool}/bin/xdotool windowclose
-          wait $MCPID
-          kill $XPID
-        '';
-      };
-
-  minecraft =
-    { version
-    , sha1
-    , extraGamedirFiles ? null
-    }:
-    minecraftFromPkg {
-      pkg = getMc { inherit version sha1; };
-      inherit extraGamedirFiles;
+  options.minecraft = {
+    version = mkOption {
+      example = "1.18";
+      description = "The version of minecraft to use.";
+      type = types.nonEmptyStr;
     };
+    sha1 = mkOption {
+      example = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+      description = "The sha1 hash of the minecraft version.";
+      type = types.nonEmptyStr;
+    };
+  };
+
+  config =
+    let
+      package = pkgs.fetchurl
+        {
+          url = "https://launchermeta.mojang.com/v1/packages/${cfg.sha1}/${cfg.version}.json";
+          inherit (cfg) sha1;
+        };
+      normalized =
+        pkgs.runCommand "package.json"
+          {
+            nativeBuildInputs = [ pkgs.jsonnet ];
+          }
+          ''
+            jsonnet -J ${./jsonnet} --tla-str-file orig_str=${package} -o $out \
+              ${./jsonnet/normalize.jsonnet}
+          '';
+      mod = builtins.fromJSON (builtins.readFile normalized);
+    in
+    # tell nix what attrs to expect to avoid infinite recursion
+    { inherit (mod) arguments assets javaVersion libraries mainClass; };
 }

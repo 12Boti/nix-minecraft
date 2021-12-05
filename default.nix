@@ -18,18 +18,27 @@
 , pkgs ? import sources.nixpkgs { }
 , lib ? pkgs.lib
 }:
+let baseModules = [
+  (import ./src/minecraft.nix)
+  (import ./src/runners.nix)
+  (import ./src/downloaders.nix)
+  # (import ./src/forge.nix)
+  # (import ./src/ftb.nix)
+  # (import ./src/liteloader.nix)
+  # (import ./src/fabric.nix)
+];
+in
 {
-  inherit (import ./src/minecraft.nix { inherit pkgs lib; }) minecraft;
-
-  minecraftForge = import ./src/forge.nix { inherit pkgs lib; };
+  minecraft = mod:
+    let result =
+      lib.evalModules {
+        modules = [ mod ] ++ baseModules;
+        specialArgs = { inherit pkgs; };
+      };
+    in
+    result.config.runners.client;
 
   curseforgeMod = import ./src/curseforge.nix { inherit pkgs lib; };
 
   modrinthMod = import ./src/modrinth.nix { inherit pkgs lib; };
-
-  minecraftFtbModpack = import ./src/ftb.nix { inherit pkgs lib; };
-
-  minecraftLiteloader = import ./src/liteloader.nix { inherit pkgs lib; };
-
-  minecraftFabric = import ./src/fabric.nix { inherit pkgs lib; };
 }
