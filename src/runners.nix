@@ -16,6 +16,20 @@ in
       type = types.nonEmptyStr;
     };
 
+    extraGamedirFiles = mkOption {
+      default = [ ];
+      type = types.listOf (types.submodule {
+        options = {
+          path = mkOption {
+            type = types.nonEmptyStr;
+          };
+          source = mkOption {
+            type = types.path;
+          };
+        };
+      });
+    };
+
     runners.client = mkOption {
       type = types.package;
     };
@@ -41,7 +55,22 @@ in
         "17" = pkgs.jre;
       }.${toString config.javaVersion};
 
-      extraGamedirFiles = null;
+      extraGamedir =
+        if config.extraGamedirFiles == [ ]
+        then null
+        else
+          let scripts = map
+            ({ path, source }: ''
+              mkdir -p $(dirname $out/${path})
+              ln -s ${source} $out/${path}
+            '')
+            config.extraGamedirFiles;
+          in
+          pkgs.runCommand "symlink-gamedir-files" { }
+            (
+              "mkdir -p $out\n"
+              + lib.concatStringsSep "\n" scripts
+            );
 
       runner = pkgs.writeShellScript "minecraft-runner" ''
         out='%OUT%'
@@ -55,14 +84,14 @@ in
         mkdir -p "$game_directory"
         cd "$game_directory"
         ${lib.optionalString
-        (extraGamedirFiles != null)
+        (extraGamedir != null)
         ''
-          if [ -d "$game_directory/mods" -a -d "${extraGamedirFiles}/mods" ]; then
-            diff -q "$game_directory/mods" "${extraGamedirFiles}/mods" \
+          if [ -d "$game_directory/mods" -a -d "$out/gamedir/mods" ]; then
+            diff -q "$game_directory/mods" "$out/gamedir/mods" \
               || echo "warning: mods folder already exists, remove it in case of conflicts and try again"
           fi
           echo "copying files to game directory ($game_directory)"
-          ${pkgs.rsync}/bin/rsync -rL --ignore-existing --chmod=755 --info=skip2,name ${extraGamedirFiles}/ "$game_directory"
+          ${pkgs.rsync}/bin/rsync -rL --ignore-existing --chmod=755 --info=skip2,name $out/gamedir/ "$game_directory"
         ''}
         assets_root="$out/assets"
         assets_index_name='${config.assets.id}'
@@ -99,8 +128,8 @@ in
           ln -s ${nativeLibsDir} $out/natives
           ln -s ${config.downloaded.assets} $out/assets
           ${lib.optionalString
-          (extraGamedirFiles != null)
-          "ln -s ${extraGamedirFiles} $out/gamedir"}
+          (extraGamedir != null)
+          "ln -s ${extraGamedir} $out/gamedir"}
           echo creating runner script
           mkdir -p $out/bin
           sed "s|%OUT%|$out|" ${runner} > $out/bin/minecraft

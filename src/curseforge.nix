@@ -13,20 +13,50 @@
 # You should have received a copy of the GNU General Public License
 # along with nix-minecraft.  If not, see <https://www.gnu.org/licenses/>.
 
-{ pkgs, lib ? pkgs.lib }:
-{ projectId, fileId, hash }:
-pkgs.runCommandLocal
-  "curseforge-mod-${toString projectId}-${toString fileId}.jar"
+{ config, pkgs, lib, ... }:
+let
+  inherit (lib) mkOption types;
+
+  download = { projectId, fileId, hash }:
+    pkgs.runCommandLocal
+      "curseforge-mod-${toString projectId}-${toString fileId}.jar"
+      {
+        outputHash = hash;
+        outputHashAlgo = "sha256";
+        nativeBuildInputs = [ pkgs.curl pkgs.jq ];
+        SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
+      }
+      ''
+        url=$(
+        curl 'https://addons-ecs.forgesvc.net/api/v2/addon/${toString projectId}/files' \
+        | jq -r '.[] | select(.id == ${toString fileId}) | .downloadUrl'
+        )
+        curl -L -o "$out" "$url"
+      '';
+in
 {
-  outputHash = hash;
-  outputHashAlgo = "sha256";
-  buildInputs = [ pkgs.curl pkgs.jq ];
-  SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
+  options.mods.curseforge = mkOption {
+    default = [ ];
+    type = types.listOf (types.submodule {
+      options = {
+        projectId = mkOption {
+          type = types.int;
+        };
+        fileId = mkOption {
+          type = types.int;
+        };
+        hash = mkOption {
+          type = types.str;
+        };
+      };
+    });
+  };
+
+  config.extraGamedirFiles = map
+    (m: {
+      source = download m;
+      path = "mods/${toString m.projectId}-${toString m.fileId}.jar";
+    })
+    config.mods.curseforge;
 }
-  ''
-    url=$(
-    curl 'https://addons-ecs.forgesvc.net/api/v2/addon/${toString projectId}/files' \
-    | jq -r '.[] | select(.id == ${toString fileId}) | .downloadUrl'
-    )
-    curl -L -o "$out" "$url"
-  ''
+  
