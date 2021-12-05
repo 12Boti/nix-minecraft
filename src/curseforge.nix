@@ -28,7 +28,7 @@ let
       }
       ''
         url=$(
-        curl 'https://addons-ecs.forgesvc.net/api/v2/addon/${toString projectId}/files' \
+        curl -L 'https://addons-ecs.forgesvc.net/api/v2/addon/${toString projectId}/files' \
         | jq -r '.[] | select(.id == ${toString fileId}) | .downloadUrl'
         )
         curl -L -o "$out" "$url"

@@ -44,7 +44,7 @@ in
           outputHashMode = "recursive";
         }
         ''
-          curl -o installer.jar \
+          curl -L -o installer.jar \
             'https://maven.minecraftforge.net/net/minecraftforge/forge/${versionStr}/forge-${versionStr}-installer.jar'
           
           java -jar installer.jar --extract
@@ -67,7 +67,7 @@ in
           jq -r '.[] | .url + " " + .path' < $out/downloads.json | \
           while read url path
           do
-            curl -o "$out/$path" "$url"
+            curl -L -o "$out/$path" "$url"
           done
 
           cp $forgeJar $out/forge.jar

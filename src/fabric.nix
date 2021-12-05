@@ -35,14 +35,14 @@ in
     let
       package = pkgs.runCommand "fabric-${config.fabric.version}"
         {
-          nativeBuildInputs = with pkgs; [ jsonnet jre unzip jq curl ];
+          nativeBuildInputs = with pkgs; [ jsonnet jq curl ];
           SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
           outputHash = config.fabric.hash;
           outputHashAlgo = "sha256";
           outputHashMode = "recursive";
         }
         ''
-          curl -o orig.json \
+          curl -L -o orig.json \
             'https://meta.fabricmc.net/v2/versions/loader/${config.minecraft.version}/${config.fabric.version}/profile/json'
 
           mkdir -p $out
@@ -54,7 +54,7 @@ in
           jq -r '.[] | .url + " " + .path' < $out/downloads.json | \
           while read url path
           do
-            curl -o "$out/$path" "$url"
+            curl -L -o "$out/$path" "$url"
           done
 
           rm $out/downloads.json

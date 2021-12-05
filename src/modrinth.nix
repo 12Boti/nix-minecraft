@@ -28,7 +28,7 @@ let
       }
       ''
         url=$(
-        curl 'https://api.modrinth.com/api/v1/mod/${projectId}/version' \
+        curl -L 'https://api.modrinth.com/api/v1/mod/${projectId}/version' \
         | jq -r '.[] | select(.version_number == "${version}") | .files[0].url'
         )
         curl -L -o "$out" "$url"

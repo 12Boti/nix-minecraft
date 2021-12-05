@@ -30,10 +30,19 @@ in
       });
     };
 
+    mods.manual = mkOption {
+      default = [ ];
+      type = types.listOf types.package;
+    };
+
     runners.client = mkOption {
       type = types.package;
     };
   };
+
+  config.extraGamedirFiles = map
+    (m: { path = "mods/${m.name}"; source = m; })
+    config.mods.manual;
 
   config.runners.client =
     let

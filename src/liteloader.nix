@@ -13,53 +13,72 @@
 # You should have received a copy of the GNU General Public License
 # along with nix-minecraft.  If not, see <https://www.gnu.org/licenses/>.
 
-{ pkgs, lib ? pkgs.lib }@inputs:
+{ config, pkgs, lib, ... }:
 let
-  inherit (import ./minecraft.nix inputs) getMc minecraftFromPkg;
-  inherit (import ./common.nix inputs) mergePkgs normalizePkg fixedPkg;
+  inherit (lib) mkOption mkOverride mkIf types;
+  cfg = config.liteloader;
 in
-{ url, mcSha1, hash, mods ? [ ], extraGamedirFiles ? null }:
-let
-  installer = builtins.fetchurl { inherit url; };
-
-  liteloaderPkgFile = pkgs.runCommand "liteloader-version.json" { } ''
-    ${pkgs.unzip}/bin/unzip -p ${installer} install_profile.json > $out
-  '';
-
-  liteloaderPkgImpure = lib.pipe liteloaderPkgFile [
-    builtins.readFile
-    builtins.fromJSON
-    (x: x.versionInfo)
-    (x: x // {
-      libraries = map
-        (l: { url = "https://libraries.minecraft.net/"; } // l)
-        x.libraries;
-    })
-    normalizePkg
-  ];
-
-  liteloaderPkg = fixedPkg {
-    pkg = liteloaderPkgImpure;
-    extraDrvs = [ installer ];
-    inherit hash;
+{
+  options.liteloader = {
+    url = mkOption {
+      default = null;
+      example = "0.12.5";
+      description = "The url to download liteloader from.";
+      type = types.nullOr types.nonEmptyStr;
+    };
+    hash = mkOption {
+      description = "The hash of the liteloader version.";
+      type = types.str;
+    };
   };
 
-  mcPkg = getMc { version = liteloaderPkg.inheritsFrom; sha1 = mcSha1; };
+  config =
+    let
+      package = pkgs.runCommand "liteloader"
+        {
+          nativeBuildInputs = with pkgs; [ jsonnet unzip jq curl ];
+          SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
+          outputHash = config.liteloader.hash;
+          outputHashAlgo = "sha256";
+          outputHashMode = "recursive";
+        }
+        ''
+          curl -L -o installer.jar '${cfg.url}'
+        
+          unzip -p installer.jar install_profile.json > orig.json
 
-  pkg = mergePkgs [ liteloaderPkg mcPkg ];
-in
-minecraftFromPkg {
-  inherit pkg;
-  extraGamedirFiles = pkgs.symlinkJoin {
-    name = "extra-gamedir";
-    paths =
-      lib.optional (extraGamedirFiles != null) extraGamedirFiles
-      ++ [
-        (
-          pkgs.linkFarm
-            "mods"
-            (map (m: { name = "mods/${m.name}"; path = m; }) mods)
-        )
-      ];
-  };
+          mkdir -p $out
+
+          jsonnet -J ${./jsonnet} -m $out \
+            --tla-str-file orig_str=orig.json \
+            ${./jsonnet/liteloader.jsonnet}
+          
+          jq -r '.[] | .url + " " + .path' < $out/downloads.json | \
+          while read url path
+          do
+            curl -L -o "$out/$path" "$url"
+          done
+
+          rm $out/downloads.json
+        '';
+      module =
+        builtins.fromJSON
+          (builtins.readFile "${package}/package.json");
+    in
+    mkIf (config.liteloader.url != null)
+      {
+        minecraft.version = module.minecraft.version;
+        arguments =
+          if module.overrideArguments
+          then mkOverride 90 module.arguments
+          else module.arguments;
+        mainClass = mkOverride 90 module.mainClass;
+        libraries = map
+          (lib:
+            if lib ? path
+            then lib // { path = "${package}/${lib.path}"; }
+            else lib
+          )
+          module.libraries;
+      };
 }
