@@ -13,19 +13,49 @@
 # You should have received a copy of the GNU General Public License
 # along with nix-minecraft.  If not, see <https://www.gnu.org/licenses/>.
 
-{ pkgs, lib ? pkgs.lib }:
-{ projectId, version, hash }:
+{ config, pkgs, lib, ... }:
 let
-  versions = lib.pipe
-    { url = "https://api.modrinth.com/api/v1/mod/${projectId}/version"; }
-    [ builtins.fetchurl builtins.readFile builtins.fromJSON ];
-  versionData = lib.findFirst
-    (x: x.version_number == version)
-    (throw "version ${version} not found for project ${projectId}")
-    versions;
+  inherit (lib) mkOption types;
+
+  download = { projectId, version, hash }:
+    pkgs.runCommandLocal
+      "modrinth-mod-${projectId}-${version}.jar"
+      {
+        outputHash = hash;
+        outputHashAlgo = "sha256";
+        nativeBuildInputs = [ pkgs.curl pkgs.jq ];
+        SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
+      }
+      ''
+        url=$(
+        curl 'https://api.modrinth.com/api/v1/mod/${projectId}/version' \
+        | jq -r '.[] | select(.version_number == "${version}") | .files[0].url'
+        )
+        curl -L -o "$out" "$url"
+      '';
 in
-pkgs.fetchurl {
-  name = "modrinth-mod-${projectId}-${version}.jar";
-  inherit hash;
-  inherit (lib.head versionData.files) url;
+{
+  options.mods.modrinth = mkOption {
+    default = [ ];
+    type = types.listOf (types.submodule {
+      options = {
+        projectId = mkOption {
+          type = types.nonEmptyStr;
+        };
+        version = mkOption {
+          type = types.nonEmptyStr;
+        };
+        hash = mkOption {
+          type = types.str;
+        };
+      };
+    });
+  };
+
+  config.extraGamedirFiles = map
+    (m: {
+      source = download m;
+      path = "mods/${m.projectId}-${m.version}.jar";
+    })
+    config.mods.modrinth;
 }

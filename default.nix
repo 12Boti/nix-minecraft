@@ -24,6 +24,7 @@ let baseModules = [
   (import ./src/downloaders.nix)
   (import ./src/forge.nix)
   (import ./src/curseforge.nix)
+  (import ./src/modrinth.nix)
   # (import ./src/ftb.nix)
   # (import ./src/liteloader.nix)
   # (import ./src/fabric.nix)
@@ -38,6 +39,4 @@ in
       };
     in
     result.config.runners.client;
-
-  modrinthMod = import ./src/modrinth.nix { inherit pkgs lib; };
 }

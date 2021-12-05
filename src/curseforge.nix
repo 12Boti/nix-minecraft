@@ -59,4 +59,3 @@ in
     })
     config.mods.curseforge;
 }
-  
