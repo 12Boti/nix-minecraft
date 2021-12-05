@@ -120,7 +120,7 @@ local os = 'linux';
        then { mainClass: pkg.mainClass }
        else {}),
 
-  download_pkg(pkg, out_path)::
+  download_pkg(pkg)::
     local get_path = function(name) std.strReplace(name, ':', '__');
     {
       'package.json': pkg {

@@ -62,7 +62,6 @@ in
 
           jsonnet -J ${./jsonnet} -m $out \
             --tla-str-file orig_str=orig.json \
-            --tla-str out_path=$out \
             ${./jsonnet/forge.jsonnet}
           
           jq -r '.[] | .url + " " + .path' < $out/downloads.json | \

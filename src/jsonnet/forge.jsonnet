@@ -17,7 +17,7 @@ local get_url_for = function(libname)
   then 'https://libraries.minecraft.net/' + lib.name_to_path(libname)
   else 'https://maven.minecraftforge.net/' + lib.name_to_path(libname);
 
-function(orig_str, out_path)
+function(orig_str)
   local orig = lib.pkg_from_str(orig_str);
   local complete = orig {
     libraries: [
@@ -34,4 +34,4 @@ function(orig_str, out_path)
       for l in orig.libraries
     ],
   };
-  lib.download_pkg(complete, out_path)
+  lib.download_pkg(complete)

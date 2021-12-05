@@ -13,45 +13,69 @@
 # You should have received a copy of the GNU General Public License
 # along with nix-minecraft.  If not, see <https://www.gnu.org/licenses/>.
 
-{ pkgs, lib ? pkgs.lib }@inputs:
+{ config, pkgs, lib, ... }:
 let
-  inherit (import ./minecraft.nix inputs) getMc minecraftFromPkg;
-  inherit (import ./common.nix inputs) mergePkgs normalizePkg fixedPkg;
+  inherit (lib) mkOption mkOverride mkIf types;
 in
-{ mcVersion, fabricVersion, mcSha1, hash, mods ? [ ], extraGamedirFiles ? null }:
-let
-  fabricJsonFile = builtins.fetchurl {
-    url = "https://meta.fabricmc.net/v2/versions/loader/${mcVersion}/${fabricVersion}/profile/json";
+{
+  options.fabric = {
+    version = mkOption {
+      default = null;
+      example = "0.12.5";
+      description = "The version of fabric to use.";
+      type = types.nullOr types.nonEmptyStr;
+    };
+    hash = mkOption {
+      description = "The hash of the fabric version.";
+      type = types.str;
+    };
   };
 
-  fabricPkgImpure = lib.pipe fabricJsonFile [
-    builtins.readFile
-    builtins.fromJSON
-    normalizePkg
-  ];
+  config =
+    let
+      package = pkgs.runCommand "fabric-${config.fabric.version}"
+        {
+          nativeBuildInputs = with pkgs; [ jsonnet jre unzip jq curl ];
+          SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
+          outputHash = config.fabric.hash;
+          outputHashAlgo = "sha256";
+          outputHashMode = "recursive";
+        }
+        ''
+          curl -o orig.json \
+            'https://meta.fabricmc.net/v2/versions/loader/${config.minecraft.version}/${config.fabric.version}/profile/json'
 
-  fabricPkg = fixedPkg {
-    pkg = fabricPkgImpure;
-    extraDrvs = [ fabricJsonFile ];
-    inherit hash;
-  };
+          mkdir -p $out
 
-  mcPkg = getMc { version = fabricPkg.inheritsFrom; sha1 = mcSha1; };
+          jsonnet -J ${./jsonnet} -m $out \
+            --tla-str-file orig_str=orig.json \
+            ${./jsonnet/download.jsonnet}
+          
+          jq -r '.[] | .url + " " + .path' < $out/downloads.json | \
+          while read url path
+          do
+            curl -o "$out/$path" "$url"
+          done
 
-  pkg = mergePkgs [ fabricPkg mcPkg ];
-in
-minecraftFromPkg {
-  inherit pkg;
-  extraGamedirFiles = pkgs.symlinkJoin {
-    name = "extra-gamedir";
-    paths =
-      lib.optional (extraGamedirFiles != null) extraGamedirFiles
-      ++ [
-        (
-          pkgs.linkFarm
-            "mods"
-            (map (m: { name = "mods/${m.name}"; path = m; }) mods)
-        )
-      ];
-  };
+          rm $out/downloads.json
+        '';
+      module =
+        builtins.fromJSON
+          (builtins.readFile "${package}/package.json");
+    in
+    mkIf (config.fabric.version != null)
+      {
+        arguments =
+          if module.overrideArguments
+          then mkOverride 90 module.arguments
+          else module.arguments;
+        mainClass = mkOverride 90 module.mainClass;
+        libraries = map
+          (lib:
+            if lib ? path
+            then lib // { path = "${package}/${lib.path}"; }
+            else lib
+          )
+          module.libraries;
+      };
 }

@@ -27,7 +27,7 @@ let baseModules = [
   (import ./src/modrinth.nix)
   (import ./src/ftb.nix)
   # (import ./src/liteloader.nix)
-  # (import ./src/fabric.nix)
+  (import ./src/fabric.nix)
 ];
 in
 {
