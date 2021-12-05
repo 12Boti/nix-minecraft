@@ -25,7 +25,7 @@ let baseModules = [
   (import ./src/forge.nix)
   (import ./src/curseforge.nix)
   (import ./src/modrinth.nix)
-  # (import ./src/ftb.nix)
+  (import ./src/ftb.nix)
   # (import ./src/liteloader.nix)
   # (import ./src/fabric.nix)
 ];

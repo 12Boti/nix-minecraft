@@ -61,16 +61,13 @@ in
         else
           let scripts = map
             ({ path, source }: ''
-              mkdir -p $(dirname $out/${path})
-              ln -s ${source} $out/${path}
+              mkdir -p "$(dirname "$out/${path}")"
+              ln -s "${source}" "$out/${path}"
             '')
             config.extraGamedirFiles;
           in
           pkgs.runCommand "symlink-gamedir-files" { }
-            (
-              "mkdir -p $out\n"
-              + lib.concatStringsSep "\n" scripts
-            );
+            (lib.concatStringsSep "\n" scripts);
 
       runner = pkgs.writeShellScript "minecraft-runner" ''
         out='%OUT%'

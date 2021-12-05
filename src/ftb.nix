@@ -13,54 +13,57 @@
 # You should have received a copy of the GNU General Public License
 # along with nix-minecraft.  If not, see <https://www.gnu.org/licenses/>.
 
-{ pkgs, lib ? pkgs.lib }@inputs:
+{ config, pkgs, lib, ... }:
 let
-  inherit (import ./common.nix inputs) fetchJson;
-  minecraftForge = import ./forge.nix inputs;
+  inherit (lib) mkOption mkIf types;
+  cfg = config.ftbModpack;
 
-  fetchUrlToPath =
-    { url, name, sha1 ? "", path }:
-    let
-      escapedName = lib.strings.sanitizeDerivationName name;
-      escapedUrl = builtins.replaceStrings [ " " ] [ "%20" ] url;
-      f = pkgs.fetchurl {
-        inherit sha1;
-        url = escapedUrl;
-        name = escapedName;
+  json = lib.pipe
+    {
+      url = "https://api.modpacks.ch/public/modpack/${toString cfg.id}/${toString cfg.version}";
+      inherit (cfg) hash;
+    }
+    [ pkgs.fetchurl builtins.readFile builtins.fromJSON ];
+
+  files = map
+    (f: {
+      path = "${f.path}/${f.name}";
+      source = pkgs.fetchurl {
+        inherit (f) sha1;
+        url = builtins.replaceStrings [ " " ] [ "%20" ] f.url;
+        name = lib.strings.sanitizeDerivationName f.name;
         curlOpts = "--globoff"; # do not misinterpret [] brackets
       };
-    in
-    pkgs.runCommandLocal f.name { } ''
-      mkdir -p "$out/${path}"
-      ln -s '${f}' "$out/${path}/${name}"
-    '';
+    })
+    (builtins.filter (f: !f.serveronly) json.files);
 
-  ftbModpackFiles = json:
-    pkgs.symlinkJoin {
-      name = "ftb-modpack";
-      paths = map
-        (f: fetchUrlToPath { inherit (f) url name sha1 path; })
-        (builtins.filter (f: !f.serveronly) json.files);
-    };
-in
-{ id, version, hash ? "", mcSha1, forgeHash ? "" }:
-let
-  json = fetchJson {
-    url = "https://api.modpacks.ch/public/modpack/${toString id}/${toString version}";
-    inherit hash;
-  };
   forgeVersion = (lib.findFirst
     (t: t.name == "forge")
     (throw "forge not found in modpack targets")
     json.targets).version;
+
   mcVersion = (lib.findFirst
     (t: t.name == "minecraft")
     (throw "minecraft not found in modpack targets")
     json.targets).version;
 in
-minecraftForge {
-  version = mcVersion + "-" + forgeVersion;
-  inherit mcSha1;
-  hash = forgeHash;
-  extraGamedirFiles = ftbModpackFiles json;
+{
+  options.ftbModpack = {
+    id = mkOption {
+      default = null;
+      type = types.nullOr types.int;
+    };
+    version = mkOption {
+      type = types.int;
+    };
+    hash = mkOption {
+      type = types.str;
+    };
+  };
+
+  config = mkIf (cfg.id != null) {
+    minecraft.version = mcVersion;
+    forge.version = forgeVersion;
+    extraGamedirFiles = files;
+  };
 }
