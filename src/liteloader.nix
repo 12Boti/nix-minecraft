@@ -61,9 +61,7 @@ in
 
           rm $out/downloads.json
         '';
-      module =
-        builtins.fromJSON
-          (builtins.readFile "${package}/package.json");
+      module = lib.importJSON "${package}/package.json";
     in
     mkIf (config.liteloader.url != null)
       {

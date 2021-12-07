@@ -97,7 +97,7 @@ in
     assets =
       let
         assetIndexFile = pkgs.fetchurl { inherit (config.assets) url sha1; };
-        assetIndex = builtins.fromJSON (builtins.readFile assetIndexFile);
+        assetIndex = lib.importJSON assetIndexFile;
         objectScripts = lib.mapAttrsToList
           (
             object: { hash, size }:

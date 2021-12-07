@@ -53,7 +53,7 @@ in
             jsonnet -J ${./jsonnet} --tla-str-file orig_str=${package} -o $out \
               ${./jsonnet/normalize.jsonnet}
           '';
-      module = builtins.fromJSON (builtins.readFile normalized);
+      module = lib.importJSON normalized;
     in
     # tell nix what attrs to expect to avoid infinite recursion
     { inherit (module) arguments assets javaVersion libraries mainClass; };

@@ -18,12 +18,10 @@ let
   inherit (lib) mkOption mkIf types;
   cfg = config.ftbModpack;
 
-  json = lib.pipe
-    {
-      url = "https://api.modpacks.ch/public/modpack/${toString cfg.id}/${toString cfg.version}";
-      inherit (cfg) hash;
-    }
-    [ pkgs.fetchurl builtins.readFile builtins.fromJSON ];
+  json = lib.importJSON (pkgs.fetchurl {
+    url = "https://api.modpacks.ch/public/modpack/${toString cfg.id}/${toString cfg.version}";
+    inherit (cfg) hash;
+  });
 
   files = map
     (f: {
