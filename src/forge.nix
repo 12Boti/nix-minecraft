@@ -15,9 +15,8 @@
 
 { config, pkgs, lib, ... }:
 let
-  inherit (lib) mkOption mkOverride mkIf types;
-  cfg = config.forge;
-  versionStr = "${config.minecraft.version}-${cfg.version}";
+  inherit (lib) mkOption types;
+  versionStr = "${config.minecraft.version}-${config.forge.version}";
 in
 {
   options.forge = {
@@ -33,62 +32,30 @@ in
     };
   };
 
-  config =
-    let
-      package = pkgs.runCommand "forge-${cfg.version}"
-        {
-          nativeBuildInputs = with pkgs; [ jsonnet jre unzip jq curl ];
-          SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
-          outputHash = cfg.hash;
-          outputHashAlgo = "sha256";
-          outputHashMode = "recursive";
-        }
-        ''
-          curl -L -o installer.jar \
-            'https://maven.minecraftforge.net/net/minecraftforge/forge/${versionStr}/forge-${versionStr}-installer.jar'
+  config = import ./download-module.nix {
+    inherit pkgs lib;
+    name = "forge-${versionStr}";
+    enabled = config.forge.version != null;
+    nativeBuildInputs = with pkgs; [ jre unzip ];
+    hash = config.forge.hash;
+    jsonnetFile = ./jsonnet/forge.jsonnet;
+    scriptBefore = ''
+      curl -L -o installer.jar \
+        'https://maven.minecraftforge.net/net/minecraftforge/forge/${versionStr}/forge-${versionStr}-installer.jar'
           
-          java -jar installer.jar --extract
-          forgeJar="forge-*.jar"
+      java -jar installer.jar --extract
+      forgeJar="forge-*.jar"
 
-          files="$(unzip -Z -1 installer.jar)"
-          if [[ "$files" =~ "version.json" ]]
-          then
-            unzip -p installer.jar version.json > orig.json
-          else
-            unzip -p $forgeJar version.json > orig.json
-          fi
-
-          mkdir -p $out
-
-          jsonnet -J ${./jsonnet} -m $out \
-            --tla-str-file orig_str=orig.json \
-            ${./jsonnet/forge.jsonnet}
-          
-          jq -r '.[] | .url + " " + .path' < $out/downloads.json | \
-          while read url path
-          do
-            curl -L -o "$out/$path" "$url"
-          done
-
-          cp $forgeJar $out/forge.jar
-
-          rm $out/downloads.json
-        '';
-      module = lib.importJSON "${package}/package.json";
-    in
-    mkIf (cfg.version != null)
-      {
-        arguments =
-          if module.overrideArguments
-          then mkOverride 90 module.arguments
-          else module.arguments;
-        mainClass = mkOverride 90 module.mainClass;
-        libraries = map
-          (lib:
-            if lib ? path
-            then lib // { path = "${package}/${lib.path}"; }
-            else lib
-          )
-          module.libraries;
-      };
+      files="$(unzip -Z -1 installer.jar)"
+      if [[ "$files" =~ "version.json" ]]
+      then
+        unzip -p installer.jar version.json > orig.json
+      else
+        unzip -p $forgeJar version.json > orig.json
+      fi
+    '';
+    scriptAfter = ''
+      cp $forgeJar $out/forge.jar
+    '';
+  };
 }

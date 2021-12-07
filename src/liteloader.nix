@@ -15,7 +15,7 @@
 
 { config, pkgs, lib, ... }:
 let
-  inherit (lib) mkOption mkOverride mkIf types;
+  inherit (lib) mkOption types;
   cfg = config.liteloader;
 in
 {
@@ -32,51 +32,16 @@ in
     };
   };
 
-  config =
-    let
-      package = pkgs.runCommand "liteloader"
-        {
-          nativeBuildInputs = with pkgs; [ jsonnet unzip jq curl ];
-          SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
-          outputHash = config.liteloader.hash;
-          outputHashAlgo = "sha256";
-          outputHashMode = "recursive";
-        }
-        ''
-          curl -L -o installer.jar '${cfg.url}'
-        
-          unzip -p installer.jar install_profile.json > orig.json
-
-          mkdir -p $out
-
-          jsonnet -J ${./jsonnet} -m $out \
-            --tla-str-file orig_str=orig.json \
-            ${./jsonnet/liteloader.jsonnet}
-          
-          jq -r '.[] | .url + " " + .path' < $out/downloads.json | \
-          while read url path
-          do
-            curl -L -o "$out/$path" "$url"
-          done
-
-          rm $out/downloads.json
-        '';
-      module = lib.importJSON "${package}/package.json";
-    in
-    mkIf (config.liteloader.url != null)
-      {
-        minecraft.version = module.minecraft.version;
-        arguments =
-          if module.overrideArguments
-          then mkOverride 90 module.arguments
-          else module.arguments;
-        mainClass = mkOverride 90 module.mainClass;
-        libraries = map
-          (lib:
-            if lib ? path
-            then lib // { path = "${package}/${lib.path}"; }
-            else lib
-          )
-          module.libraries;
-      };
+  config = import ./download-module.nix {
+    inherit pkgs lib;
+    name = "liteloader";
+    enabled = config.liteloader.url != null;
+    nativeBuildInputs = with pkgs; [ unzip ];
+    hash = config.liteloader.hash;
+    jsonnetFile = ./jsonnet/liteloader.jsonnet;
+    scriptBefore = ''
+      curl -L -o installer.jar '${cfg.url}'
+      unzip -p installer.jar install_profile.json > orig.json
+    '';
+  };
 }

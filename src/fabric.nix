@@ -15,7 +15,7 @@
 
 { config, pkgs, lib, ... }:
 let
-  inherit (lib) mkOption mkOverride mkIf types;
+  inherit (lib) mkOption types;
 in
 {
   options.fabric = {
@@ -31,49 +31,15 @@ in
     };
   };
 
-  config =
-    let
-      package = pkgs.runCommand "fabric-${config.fabric.version}"
-        {
-          nativeBuildInputs = with pkgs; [ jsonnet jq curl ];
-          SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
-          outputHash = config.fabric.hash;
-          outputHashAlgo = "sha256";
-          outputHashMode = "recursive";
-        }
-        ''
-          curl -L -o orig.json \
-            'https://meta.fabricmc.net/v2/versions/loader/${config.minecraft.version}/${config.fabric.version}/profile/json'
-
-          mkdir -p $out
-
-          jsonnet -J ${./jsonnet} -m $out \
-            --tla-str-file orig_str=orig.json \
-            ${./jsonnet/download.jsonnet}
-          
-          jq -r '.[] | .url + " " + .path' < $out/downloads.json | \
-          while read url path
-          do
-            curl -L -o "$out/$path" "$url"
-          done
-
-          rm $out/downloads.json
-        '';
-      module = lib.importJSON "${package}/package.json";
-    in
-    mkIf (config.fabric.version != null)
-      {
-        arguments =
-          if module.overrideArguments
-          then mkOverride 90 module.arguments
-          else module.arguments;
-        mainClass = mkOverride 90 module.mainClass;
-        libraries = map
-          (lib:
-            if lib ? path
-            then lib // { path = "${package}/${lib.path}"; }
-            else lib
-          )
-          module.libraries;
-      };
+  config = import ./download-module.nix {
+    inherit pkgs lib;
+    name = "fabric-${config.fabric.version}";
+    enabled = config.fabric.version != null;
+    hash = config.fabric.hash;
+    jsonnetFile = ./jsonnet/download.jsonnet;
+    scriptBefore = ''
+      curl -L -o orig.json \
+        'https://meta.fabricmc.net/v2/versions/loader/${config.minecraft.version}/${config.fabric.version}/profile/json'
+    '';
+  };
 }
