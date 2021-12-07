@@ -29,6 +29,7 @@ in
       example = "1.18";
       description = "The version of minecraft to use.";
       type = types.nonEmptyStr;
+      default = config.internal.requiredMinecraftVersion;
     };
     sha1 = mkOption {
       example = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
@@ -37,7 +38,7 @@ in
     };
   };
 
-  config =
+  config.internal =
     let
       package = pkgs.fetchurl
         {

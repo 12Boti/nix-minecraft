@@ -4,18 +4,6 @@ let
 in
 {
   options = {
-    arguments = mkOption {
-      type = types.listOf types.str;
-    };
-
-    javaVersion = mkOption {
-      type = types.int;
-    };
-
-    mainClass = mkOption {
-      type = types.nonEmptyStr;
-    };
-
     extraGamedirFiles = mkOption {
       default = [ ];
       type = types.listOf (types.submodule {
@@ -62,7 +50,7 @@ in
         "8" = pkgs.jre8;
         "16" = pkgs.jre;
         "17" = pkgs.jre;
-      }.${toString config.javaVersion};
+      }.${toString config.internal.javaVersion};
 
       extraGamedir =
         if config.extraGamedirFiles == [ ]
@@ -100,7 +88,7 @@ in
           ${pkgs.rsync}/bin/rsync -rL --ignore-existing --chmod=755 --info=skip2,name $out/gamedir/ "$game_directory"
         ''}
         assets_root="$out/assets"
-        assets_index_name='${config.assets.id}'
+        assets_index_name='${config.internal.assets.id}'
         auth_uuid='1234'
         auth_access_token='REPLACEME'
         user_type='mojang'
@@ -115,8 +103,8 @@ in
           ${jre}/bin/java \
           -Djava.library.path="$out/natives" \
           -classpath '${classpath}' \
-          '${config.mainClass}' \
-          ${lib.concatMapStringsSep " " (x: ''"${x}"'') config.arguments}
+          '${config.internal.mainClass}' \
+          ${lib.concatMapStringsSep " " (x: ''"${x}"'') config.internal.arguments}
       '';
     in
     pkgs.stdenvNoCC.mkDerivation

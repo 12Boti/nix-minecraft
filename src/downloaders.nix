@@ -18,44 +18,6 @@ let
   inherit (lib) mkOption types;
 in
 {
-
-  options.libraries = mkOption {
-    type = types.listOf (types.submodule {
-      options = {
-        type = mkOption {
-          type = types.enum [ "jar" "native" ];
-        };
-        name = mkOption {
-          type = types.nonEmptyStr;
-        };
-        sha1 = mkOption {
-          default = null;
-          type = types.nullOr types.nonEmptyStr;
-        };
-        url = mkOption {
-          default = null;
-          type = types.nullOr types.nonEmptyStr;
-        };
-        path = mkOption {
-          default = null;
-          type = types.nullOr types.path;
-        };
-      };
-    });
-  };
-
-  options.assets = {
-    id = mkOption {
-      type = types.nonEmptyStr;
-    };
-    url = mkOption {
-      type = types.nonEmptyStr;
-    };
-    sha1 = mkOption {
-      type = types.nonEmptyStr;
-    };
-  };
-
   options.downloaded = {
     jars = mkOption {
       type = types.listOf types.path;
@@ -77,7 +39,7 @@ in
         then javaLib.path
         else pkgs.fetchurl { inherit (javaLib) url sha1; }
       )
-      (builtins.filter (x: x.type == "jar") config.libraries);
+      (builtins.filter (x: x.type == "jar") config.internal.libraries);
     natives = map
       (
         nativeLib:
@@ -92,11 +54,11 @@ in
           rm -rf $out/META-INF
         ''
       )
-      (builtins.filter (x: x.type == "native") config.libraries);
+      (builtins.filter (x: x.type == "native") config.internal.libraries);
 
     assets =
       let
-        assetIndexFile = pkgs.fetchurl { inherit (config.assets) url sha1; };
+        assetIndexFile = pkgs.fetchurl { inherit (config.internal.assets) url sha1; };
         assetIndex = lib.importJSON assetIndexFile;
         objectScripts = lib.mapAttrsToList
           (
@@ -116,7 +78,7 @@ in
           assetIndex.objects;
         script = (lib.concatStringsSep "\n" objectScripts) + ''
           mkdir -p $out/indexes
-          ln -s ${assetIndexFile} $out/indexes/${config.assets.id}.json
+          ln -s ${assetIndexFile} $out/indexes/${config.internal.assets.id}.json
         '';
       in
       pkgs.runCommand "symlink-assets" { } script;

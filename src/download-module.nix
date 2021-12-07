@@ -22,11 +22,10 @@
 , jsonnetFile
 , scriptBefore ? "" # should produce an `orig.json` file
 , scriptAfter ? ""
-, additionalAttrs ? _: { }
 }:
 let
   inherit (pkgs) runCommand jsonnet jq curl cacert;
-  inherit (lib) mkIf mkOverride importJSON;
+  inherit (lib) mkOverride importJSON;
 
   package = runCommand name
     {
@@ -57,8 +56,8 @@ let
     '';
   module = importJSON "${package}/package.json";
 in
-mkIf enabled (
-  {
+lib.optionalAttrs enabled (
+  (removeAttrs module [ "overrideArguments" ]) // {
     arguments =
       if module.overrideArguments
       then mkOverride 90 module.arguments
@@ -71,5 +70,5 @@ mkIf enabled (
         else l
       )
       module.libraries;
-  } // additionalAttrs module
+  }
 )

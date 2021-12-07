@@ -29,6 +29,7 @@ rec {
 
   baseModules = [
     { _module.args.pkgs = pkgs; }
+    (import ./src/internal.nix)
     (import ./src/minecraft.nix)
     (import ./src/forge.nix)
     (import ./src/curseforge.nix)

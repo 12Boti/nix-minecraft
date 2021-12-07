@@ -32,7 +32,7 @@ in
     };
   };
 
-  config = import ./download-module.nix {
+  config.internal = import ./download-module.nix {
     inherit pkgs lib;
     name = "forge-${versionStr}";
     enabled = config.forge.version != null;

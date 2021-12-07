@@ -31,7 +31,7 @@ in
     };
   };
 
-  config = import ./download-module.nix {
+  config.internal = import ./download-module.nix {
     inherit pkgs lib;
     name = "fabric-${config.fabric.version}";
     enabled = config.fabric.version != null;

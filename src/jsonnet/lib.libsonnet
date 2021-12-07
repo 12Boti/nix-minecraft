@@ -114,7 +114,7 @@ local os = 'linux';
        }
        else {})
     + (if 'inheritsFrom' in pkg
-       then { minecraft: { version: pkg.inheritsFrom } }
+       then { requiredMinecraftVersion: pkg.inheritsFrom }
        else {})
     + (if 'mainClass' in pkg
        then { mainClass: pkg.mainClass }
