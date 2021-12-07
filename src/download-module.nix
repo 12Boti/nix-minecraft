@@ -22,6 +22,7 @@
 , jsonnetFile
 , scriptBefore ? "" # should produce an `orig.json` file
 , scriptAfter ? ""
+, additionalAttrs ? _: { }
 }:
 let
   inherit (pkgs) runCommand jsonnet jq curl cacert;
@@ -56,17 +57,19 @@ let
     '';
   module = importJSON "${package}/package.json";
 in
-mkIf enabled {
-  arguments =
-    if module.overrideArguments
-    then mkOverride 90 module.arguments
-    else module.arguments;
-  mainClass = mkOverride 90 module.mainClass;
-  libraries = map
-    (lib:
-      if lib ? path
-      then lib // { path = "${package}/${lib.path}"; }
-      else lib
-    )
-    module.libraries;
-}
+mkIf enabled (
+  {
+    arguments =
+      if module.overrideArguments
+      then mkOverride 90 module.arguments
+      else module.arguments;
+    mainClass = mkOverride 90 module.mainClass;
+    libraries = map
+      (l:
+        if l ? path
+        then l // { path = "${package}/${l.path}"; }
+        else l
+      )
+      module.libraries;
+  } // additionalAttrs module
+)

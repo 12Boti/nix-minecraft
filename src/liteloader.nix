@@ -43,5 +43,6 @@ in
       curl -L -o installer.jar '${cfg.url}'
       unzip -p installer.jar install_profile.json > orig.json
     '';
+    additionalAttrs = m: { minecraft.version = m.minecraft.version; };
   };
 }
