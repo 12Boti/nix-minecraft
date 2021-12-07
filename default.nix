@@ -38,4 +38,6 @@ rec {
     (import ./src/liteloader.nix)
     (import ./src/fabric.nix)
   ];
+
+  docs = pkgs.callPackage ./docs { inherit baseModules; };
 }
