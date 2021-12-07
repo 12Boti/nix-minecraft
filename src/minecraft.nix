@@ -18,7 +18,11 @@ let
   inherit (lib) mkOption types;
   cfg = config.minecraft;
 in
-rec {
+{
+  imports = [
+    ./runners.nix
+    ./downloaders.nix
+  ];
 
   options.minecraft = {
     version = mkOption {
