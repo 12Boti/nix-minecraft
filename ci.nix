@@ -8,7 +8,7 @@ lib.mapAttrs (_: minecraft)
   forge10 = {
     minecraft = {
       version = "1.10.2";
-      sha1 = "a86a4eaacfee738c8d609baf6d414175f94c26f6";
+      hash = "sha256-RJy47jz2Hw77LyyphzFlrvJtCqMZEN0Xp8DdI8ahByk=";
     };
     forge = {
       version = "12.18.3.2511";
@@ -18,7 +18,7 @@ lib.mapAttrs (_: minecraft)
   forge12 = {
     minecraft = {
       version = "1.12.2";
-      sha1 = "f07e0f1228f79b9b04313fc5640cd952474ba6f5";
+      hash = "sha256-IUV11B+ydz978Urg6KtfJ8L82+2k7kdLITOUlwOrY/A=";
     };
     forge = {
       version = "14.23.5.2855";
@@ -46,7 +46,7 @@ lib.mapAttrs (_: minecraft)
       url = "http://dl.liteloader.com/redist/1.10.2/liteloader-installer-1.10.2-00.jar";
       hash = "sha256-qpY0+I28Bnf5ux4kU16jxx4VyKSgttNuZkUHzDlWMbk=";
     };
-    minecraft.sha1 = "a86a4eaacfee738c8d609baf6d414175f94c26f6";
+    minecraft.hash = "sha256-RJy47jz2Hw77LyyphzFlrvJtCqMZEN0Xp8DdI8ahByk=";
     mods.curseforge = [
       # Armors HUD Revived
       {
@@ -61,7 +61,7 @@ lib.mapAttrs (_: minecraft)
       url = "http://jenkins.liteloader.com/job/LiteLoaderInstaller%201.12.2/lastSuccessfulBuild/artifact/build/libs/liteloader-installer-1.12.2-00-SNAPSHOT.jar";
       hash = "sha256-FuqIiYDTue+c3jNce5B42kF+mXhaJSDZzOBNZNhMxV0=";
     };
-    minecraft.sha1 = "f07e0f1228f79b9b04313fc5640cd952474ba6f5";
+    minecraft.hash = "sha256-IUV11B+ydz978Urg6KtfJ8L82+2k7kdLITOUlwOrY/A=";
     mods.manual = map pkgs.fetchurl [
       # Extended Hotbar
       {
@@ -73,7 +73,7 @@ lib.mapAttrs (_: minecraft)
   fabric16 = {
     minecraft = {
       version = "1.16.5";
-      sha1 = "66935fe3a8f602111a3f3cba9867d3fd6d80ef47";
+      hash = "sha256-I093o0KIr1gd98xZOtM276MOUAI1Nf3R8m9+8viDQDY=";
     };
     fabric = {
       version = "0.12.5";
@@ -117,25 +117,25 @@ lib.mapAttrs (_: minecraft)
   vanilla10 = {
     minecraft = {
       version = "1.10.2";
-      sha1 = "a86a4eaacfee738c8d609baf6d414175f94c26f6";
+      hash = "sha256-RJy47jz2Hw77LyyphzFlrvJtCqMZEN0Xp8DdI8ahByk=";
     };
   };
   vanilla12 = {
     minecraft = {
       version = "1.12.2";
-      sha1 = "f07e0f1228f79b9b04313fc5640cd952474ba6f5";
+      hash = "sha256-IUV11B+ydz978Urg6KtfJ8L82+2k7kdLITOUlwOrY/A=";
     };
   };
   vanilla16 = {
     minecraft = {
       version = "1.16";
-      sha1 = "5a157ca1ae150c3acb10afdfe714ba34bf322315";
+      hash = "sha256-I093o0KIr1gd98xZOtM276MOUAI1Nf3R8m9+8viDQDY=";
     };
   };
   vanilla18 = {
     minecraft = {
       version = "1.18";
-      sha1 = "cdd1c0f485c0ea5a5aae60d4e62d316b2141f227";
+      hash = "sha256-NR2InQHkIFDfYYYyg8haIU1DvcjZD9f9Jfg4RRsX3fI=";
     };
   };
   modpack10 = {
@@ -144,7 +144,7 @@ lib.mapAttrs (_: minecraft)
       version = 123;
       hash = "sha256-rIK9l8q/WSfaf9nRfDt5A/vTS7Zx+VTPC69JqGHETH4=";
     };
-    minecraft.sha1 = "a86a4eaacfee738c8d609baf6d414175f94c26f6";
+    minecraft.hash = "sha256-RJy47jz2Hw77LyyphzFlrvJtCqMZEN0Xp8DdI8ahByk=";
     forge.hash = "sha256-YVLfrpfABnWfdV3AE3JCvPLA5XQNwIJAQ+uqeVrpAqU=";
   };
   modpack12 = {
@@ -153,7 +153,7 @@ lib.mapAttrs (_: minecraft)
       version = 2059;
       hash = "sha256-9dN7YrKWHdS97gMQGQbNMVjOBMNMg36qMMot47OthAw=";
     };
-    minecraft.sha1 = "f07e0f1228f79b9b04313fc5640cd952474ba6f5";
+    minecraft.hash = "sha256-IUV11B+ydz978Urg6KtfJ8L82+2k7kdLITOUlwOrY/A=";
     forge.hash = "sha256-A1fHrqaYsOLeA+p5wnl4Daq6xsRBsJOUi5Yf0Wf0lQg=";
   };
 }

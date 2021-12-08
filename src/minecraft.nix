@@ -31,20 +31,28 @@ in
       type = types.nonEmptyStr;
       default = config.internal.requiredMinecraftVersion;
     };
-    sha1 = mkOption {
-      example = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
-      description = "The sha1 hash of the minecraft version.";
-      type = types.nonEmptyStr;
+    hash = mkOption {
+      description = "The hash of the minecraft version.";
+      type = types.str;
     };
   };
 
   config.internal =
     let
-      package = pkgs.fetchurl
+      package = pkgs.runCommandLocal "version.json"
         {
-          url = "https://launchermeta.mojang.com/v1/packages/${cfg.sha1}/${cfg.version}.json";
-          inherit (cfg) sha1;
-        };
+          outputHash = cfg.hash;
+          outputHashAlgo = "sha256";
+          nativeBuildInputs = [ pkgs.curl pkgs.jq ];
+          SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
+        }
+        ''
+          url=$(
+          curl -L 'http://launchermeta.mojang.com/mc/game/version_manifest_v2.json' \
+          | jq -r '.versions[] | select(.id == "${cfg.version}") | .url'
+          )
+          curl -L -o $out $url
+        '';
       normalized =
         pkgs.runCommand "package.json"
           {
