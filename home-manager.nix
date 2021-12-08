@@ -15,8 +15,9 @@
 
 { pkgs, config, lib, ... }:
 let
+  inherit (import ./. { inherit pkgs lib; }) baseModules;
   cfg = config.programs.minecraft;
-  inherit (lib) mkOption mkEnableOption types;
+  inherit (lib) mkOption mkDefault mkEnableOption mkOptionType mergeOneOption types;
 in
 {
   options.programs.minecraft = {
@@ -27,31 +28,33 @@ in
       example = "games/minecraft";
       description = "Path to store versions of minecraft in. Relative to the home directory.";
     };
-    defaultUsername = mkOption {
-      type = types.nonEmptyStr;
-      example = "NixDude";
-      description = "The username to use if none was specified on launch.";
+    shared = mkOption {
+      type = mkOptionType {
+        name = "shared-module";
+        inherit (types.submodule { }) check;
+        merge = lib.options.mergeOneOption;
+      };
+      default = { };
+      description = "The config to be shared between all versions.";
     };
     versions = mkOption {
       default = { };
       description = "Versions of minecraft to install.";
-      type = types.attrsOf types.package;
+      type = types.attrsOf (types.submodule (
+        [
+          cfg.shared
+          ({ name, ... }:
+            { gamedir = mkDefault "${config.home.homeDirectory}/${cfg.basePath}/${name}/gamedir"; })
+        ] ++ baseModules
+      ));
     };
   };
 
   config.home.file = lib.mapAttrs'
     (name: value:
-      let dir = cfg.basePath + "/" + name + "/";
-      in
       {
-        name = dir + "run";
-        value = {
-          source = pkgs.writeShellScript "run-minecraft-${name}" ''
-            username="''${1:-${cfg.defaultUsername}}"
-            game_directory="''${2:-${dir + "gamedir"}}"
-            exec ${value}/bin/minecraft "$username" "$game_directory"
-          '';
-        };
+        name = "${cfg.basePath}/${name}/run";
+        value.source = "${value.runners.client}/bin/minecraft";
       })
     cfg.versions;
 }
