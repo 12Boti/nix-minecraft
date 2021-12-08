@@ -5,6 +5,21 @@ A Minecraft launcher in nix.
 Import the `default.nix` in this repository in any way you want (vendoring, [git submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules), [nix flakes](https://nixos.wiki/wiki/Flakes), [niv](https://github.com/nmattia/niv), `builtins.fetchTarball`, ...).
 Call the minecraft function with the desired configuration.
 
+Example:
+```nix
+let
+  inherit (import ./path/to/default.nix { }) minecraft;
+in
+minecraft {
+  minecraft = {
+    version = "1.18";
+    hash = "sha256-NR2InQHkIFDfYYYyg8haIU1DvcjZD9f9Jfg4RRsX3fI=";
+  };
+}
+```
+
+You can find all the options at 12boti.github.io/nix-minecraft.
+
 ## License
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
