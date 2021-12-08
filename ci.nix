@@ -73,7 +73,7 @@ lib.mapAttrs (_: minecraft)
   fabric16 = {
     minecraft = {
       version = "1.16.5";
-      hash = "sha256-I093o0KIr1gd98xZOtM276MOUAI1Nf3R8m9+8viDQDY=";
+      hash = "sha256-khV5PppuBrJ15iXRT/UzV1WfTPumYfn6ae2bBJVT0Hk=";
     };
     fabric = {
       version = "0.12.5";
