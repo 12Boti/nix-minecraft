@@ -162,6 +162,18 @@ You'll find a string like "VersionId: xxxx".
 
 </div>
 
+<div class="option" id="gamedir">
+  <div class="name">gamedir</div>
+  <div class="type">non-empty string</div>
+  <div class="desc">The directory where worlds, mods and other files are stored.
+If it's not an absolute path, it's relative to the working directory
+where you run minecraft.
+Can be overwritten with the "MINECRAFT_GAMEDIR" environment variable.
+</div>
+  <div class="example">./gamedir</div>
+
+</div>
+
 <div class="option" id="liteloader.hash">
   <div class="name">liteloader.hash</div>
   <div class="type">string</div>
@@ -314,6 +326,16 @@ and select the mod you want.
 On the versions tab, copy the wanted version from the VERSION column.
 </div>
   
+</div>
+
+<div class="option" id="username">
+  <div class="name">username</div>
+  <div class="type">non-empty string</div>
+  <div class="desc">Your in-game username.
+Can be overwritten with the "MINECRAFT_USERNAME" environment variable.
+</div>
+  <div class="example">NixDude</div>
+
 </div>
     </div>
     <script>
