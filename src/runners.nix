@@ -4,6 +4,26 @@ let
 in
 {
   options = {
+    username = mkOption {
+      description = ''
+        Your in-game username.
+        Can be overwritten with the "MINECRAFT_USERNAME" environment variable.
+      '';
+      example = "NixDude";
+      type = types.nonEmptyStr;
+    };
+
+    gamedir = mkOption {
+      description = ''
+        The directory where worlds, mods and other files are stored.
+        If it's not an absolute path, it's relative to the working directory
+        where you run minecraft.
+        Can be overwritten with the "MINECRAFT_GAMEDIR" environment variable.
+      '';
+      example = "./gamedir";
+      type = types.nonEmptyStr;
+    };
+
     extraGamedirFiles = mkOption {
       description = "Extra files to symlink into the game directory.";
       default = [ ];
@@ -86,13 +106,12 @@ in
             (lib.concatStringsSep "\n" scripts);
 
       runner = pkgs.writeShellScript "minecraft-runner" ''
+        set -o errexit
+        set -o pipefail
         out='%OUT%'
-        usage="Usage: $0 <username> [<gamedir>]"
-        test $# -eq 0 && echo $usage && exit 1
-        test "$1" = "-h" -o "$1" = "--help" && echo $usage && exit 1
-        auth_player_name="$1"
+        auth_player_name="''${MINECRAFT_USERNAME:-${config.username}}"
         version_name='${config.minecraft.version}'
-        game_directory="''${2:-./gamedir}"
+        game_directory="''${MINECRAFT_GAMEDIR:-${config.gamedir}}"
         game_directory="$(realpath "$game_directory")"
         mkdir -p "$game_directory"
         cd "$game_directory"

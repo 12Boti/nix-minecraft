@@ -2,8 +2,14 @@
 , pkgs ? import sources.nixpkgs { }
 , lib ? pkgs.lib
 }:
+let
+  shared = {
+    username = "NixDude";
+    gamedir = "./gamedir";
+  };
+in
 with import ./. { };
-lib.mapAttrs (_: minecraft)
+lib.mapAttrs (_: m: minecraft (shared // m))
 {
   forge10 = {
     minecraft = {
