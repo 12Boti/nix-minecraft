@@ -21,12 +21,15 @@ in
   options.downloaded = {
     jars = mkOption {
       type = types.listOf types.path;
+      internal = true;
     };
     natives = mkOption {
       type = types.listOf types.path;
+      internal = true;
     };
     assets = mkOption {
       type = types.path;
+      internal = true;
     };
   };
 

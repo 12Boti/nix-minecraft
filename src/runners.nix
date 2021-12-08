@@ -25,6 +25,7 @@ in
 
     runners.client = mkOption {
       type = types.package;
+      internal = true;
     };
   };
 
