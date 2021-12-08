@@ -18,7 +18,7 @@ minecraft {
 }
 ```
 
-You can find all the options at 12boti.github.io/nix-minecraft.
+You can find all the options at https://12boti.github.io/nix-minecraft.
 
 ## License
     This program is free software: you can redistribute it and/or modify
