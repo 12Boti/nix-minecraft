@@ -5,13 +5,17 @@ in
 {
   options = {
     extraGamedirFiles = mkOption {
+      description = "Extra files to symlink into the game directory.";
       default = [ ];
       type = types.listOf (types.submodule {
         options = {
           path = mkOption {
+            description = "Where to link the file, relative to the game directory.";
+            example = "config/something.cfg";
             type = types.nonEmptyStr;
           };
           source = mkOption {
+            description = "Path to the file to be linked.";
             type = types.path;
           };
         };
@@ -19,8 +23,22 @@ in
     };
 
     mods.manual = mkOption {
+      example = ''
+        <pre><code>
+        map pkgs.fetchurl [
+          # Extended Hotbar
+          {
+            url = "https://github.com/DenWav/ExtendedHotbar/releases/download/1.2.0/mod-extendedhotbar-1.2.0-mc1.12.2.litemod";
+            hash = "sha256-CyB7jypxXq41wAfb/t1RCsxaS8uZZjAl/h531osq0Fc=";
+          }
+        ]
+        </code></pre>
+      '';
       default = [ ];
       type = types.listOf types.package;
+      description = ''
+        A list of .jar files to use as mods.
+      '';
     };
 
     runners.client = mkOption {

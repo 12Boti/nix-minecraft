@@ -22,12 +22,19 @@ in
   options.liteloader = {
     url = mkOption {
       default = null;
-      example = "0.12.5";
-      description = "The url to download liteloader from.";
+      example = "http://jenkins.liteloader.com/job/LiteLoaderInstaller%201.12.2/lastSuccessfulBuild/artifact/build/libs/liteloader-installer-1.12.2-00-SNAPSHOT.jar";
+      description = ''
+        The URL to download liteloader from.
+        To find it go to https://www.liteloader.com/download
+        and copy the URL of the **jar file**.
+      '';
       type = types.nullOr types.nonEmptyStr;
     };
     hash = mkOption {
-      description = "The hash of the liteloader version.";
+      description = ''
+        The hash of the liteloader version.
+        Leave it empty to have nix tell you what to use.
+      '';
       type = types.str;
     };
   };

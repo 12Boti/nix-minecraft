@@ -22,11 +22,17 @@ in
     version = mkOption {
       default = null;
       example = "0.12.5";
-      description = "The version of fabric to use.";
+      description = ''
+        The version of fabric to use.
+        You'll most likely want the latest version from https://github.com/FabricMC/fabric-loader/releases
+      '';
       type = types.nullOr types.nonEmptyStr;
     };
     hash = mkOption {
-      description = "The hash of the fabric version.";
+      description = ''
+        The hash of the fabric version.
+        Leave it empty to have nix tell you what to use.
+      '';
       type = types.str;
     };
   };

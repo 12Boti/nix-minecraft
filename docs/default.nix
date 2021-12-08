@@ -11,6 +11,9 @@ let
         <div class="name">${opt.name}</div>
         <div class="type">${opt.type}</div>
         <div class="desc">${opt.description}</div>
+        ${lib.optionalString (opt ? example) ''
+        <div class="example">${toString opt.example}</div>
+        ''}
       </div>
     '')
     visibleOptions;

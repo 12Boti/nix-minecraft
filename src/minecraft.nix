@@ -32,7 +32,10 @@ in
       default = config.internal.requiredMinecraftVersion;
     };
     hash = mkOption {
-      description = "The hash of the minecraft version.";
+      description = ''
+        The hash of the minecraft version.
+        Leave it empty to have nix tell you what to use.
+      '';
       type = types.str;
     };
   };

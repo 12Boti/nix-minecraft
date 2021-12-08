@@ -48,14 +48,32 @@ in
 {
   options.ftbModpack = {
     id = mkOption {
+      example = 25;
       default = null;
       type = types.nullOr types.int;
+      description = ''
+        The ID of the modpack you want to install.
+        To find it go to https://www.feed-the-beast.com/modpack/ ,
+        select your modpack and hover over the title.
+        You'll find a string like `"Identifier: xx"`.
+      '';
     };
     version = mkOption {
+      example = 123;
       type = types.int;
+      description = ''
+        The version ID you want to install.
+        To find it go to https://www.feed-the-beast.com/modpack/ ,
+        select your modpack, go to the versons tab and hover over the version.
+        You'll find a string like `"VersionId: xxxx"`.
+      '';
     };
     hash = mkOption {
       type = types.str;
+      description = ''
+        The hash of the modpack.
+        Leave it empty to have nix tell you what to use.
+      '';
     };
   };
 

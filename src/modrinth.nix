@@ -36,17 +36,47 @@ let
 in
 {
   options.mods.modrinth = mkOption {
+    example = ''
+      <pre><code>
+      [
+        # Mod Menu
+        {
+          projectId = "mOgUt4GM";
+          version = "1.16.22";
+          hash = "sha256-bYP08vpv/HbEGGISW6ij0asnfZk1nhn8HUj/A7EV81A=";
+        }
+      ]
+      </code></pre>
+    '';
+    description = ''
+      List of mods to install from modrinth.
+    '';
     default = [ ];
     type = types.listOf (types.submodule {
       options = {
         projectId = mkOption {
           type = types.nonEmptyStr;
+          description = ''
+            The ID of the mod on curseforge.
+            To find it go to https://modrinth.com/mods
+            and select the mod you want. The Project ID will be on the right.
+          '';
         };
         version = mkOption {
           type = types.nonEmptyStr;
+          description = ''
+            The ID of the file on curseforge.
+            To find it go to https://modrinth.com/mods
+            and select the mod you want.
+            On the versions tab, copy the wanted version from the VERSION column.
+          '';
         };
         hash = mkOption {
           type = types.str;
+          description = ''
+            The hash of the mod.
+            Leave it empty to have nix tell you what to use.
+          '';
         };
       };
     });

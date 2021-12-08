@@ -23,11 +23,17 @@ in
     version = mkOption {
       default = null;
       example = "14.23.5.2855";
-      description = "The version of forge to use.";
+      description = ''
+        The version of forge to use.
+        See the available versions here: https://files.minecraftforge.net/net/minecraftforge/forge/
+      '';
       type = types.nullOr types.nonEmptyStr;
     };
     hash = mkOption {
-      description = "The hash of the forge version.";
+      description = ''
+        The hash of the forge version.
+        Leave it empty to have nix tell you what to use.
+      '';
       type = types.str;
     };
   };

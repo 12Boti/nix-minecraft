@@ -36,17 +36,48 @@ let
 in
 {
   options.mods.curseforge = mkOption {
+    example = ''
+      <pre><code>
+      [
+        # JEI
+        {
+          projectId = 238222;
+          fileId = 3043174;
+          hash = "sha256-nbwsDsjCiCH91dykh5CQiVAWB+4lwOhHDEPJ/QvRIFM=";
+        }
+      ]
+      </code></pre>
+    '';
+    description = ''
+      List of mods to install from curseforge.
+    '';
     default = [ ];
     type = types.listOf (types.submodule {
       options = {
         projectId = mkOption {
           type = types.int;
+          description = ''
+            The ID of the mod on curseforge.
+            To find it go to https://www.curseforge.com/minecraft/mc-mods
+            and select the mod you want. The Project ID will be on the right.
+          '';
         };
         fileId = mkOption {
           type = types.int;
+          description = ''
+            The ID of the file on curseforge.
+            To find it go to https://www.curseforge.com/minecraft/mc-mods
+            and select the mod you want.
+            On the files tab, select the file you want.
+            The last part of the URL will be the file's ID.
+          '';
         };
         hash = mkOption {
           type = types.str;
+          description = ''
+            The hash of the mod.
+            Leave it empty to have nix tell you what to use.
+          '';
         };
       };
     });
