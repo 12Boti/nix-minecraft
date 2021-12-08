@@ -1,0 +1,22 @@
+name: API Docs
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  pages:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: cachix/install-nix-action@v15
+      - name: build
+        run: |
+          nix-build . -A docs
+          mkdir public
+          cp -L result public/index.html
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@4.1.7
+        with:
+          branch: gh-pages
+          folder: public
