@@ -10,7 +10,7 @@ in
     };
 
     javaVersion = mkOption {
-      type = types.int;
+      type = types.ints.positive;
       internal = true;
     };
 

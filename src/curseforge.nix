@@ -55,7 +55,7 @@ in
     type = types.listOf (types.submodule {
       options = {
         projectId = mkOption {
-          type = types.int;
+          type = types.ints.unsigned;
           description = ''
             The ID of the mod on curseforge.
             To find it go to https://www.curseforge.com/minecraft/mc-mods
@@ -63,7 +63,7 @@ in
           '';
         };
         fileId = mkOption {
-          type = types.int;
+          type = types.ints.unsigned;
           description = ''
             The ID of the file on curseforge.
             To find it go to https://www.curseforge.com/minecraft/mc-mods

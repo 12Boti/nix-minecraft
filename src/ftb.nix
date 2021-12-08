@@ -50,7 +50,7 @@ in
     id = mkOption {
       example = 25;
       default = null;
-      type = types.nullOr types.int;
+      type = types.nullOr types.ints.unsigned;
       description = ''
         The ID of the modpack you want to install.
         To find it go to https://www.feed-the-beast.com/modpack/ ,
@@ -60,7 +60,7 @@ in
     };
     version = mkOption {
       example = 123;
-      type = types.int;
+      type = types.ints.unsigned;
       description = ''
         The version ID you want to install.
         To find it go to https://www.feed-the-beast.com/modpack/ ,
