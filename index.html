@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='utf-8' />
+    <meta http-equiv='X-UA-Compatible' content='IE=edge' />
+    <title>nix-minecraft API</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1' />
+    <link href="https://unpkg.com/prismjs@1.25.0/themes/prism-okaidia.css" rel="stylesheet" />
+    <style>
+        :root {
+            font-family: sans-serif;
+            background-color: #222;
+            color: #ddd;
+        }
+
+        a {
+            color: #57d5ff;
+        }
+
+        #search {
+            position: sticky;
+            top: 1rem;
+            left: 50%;
+            transform: translate(-50%, 0);
+            font-size: large;
+            background-color: #333;
+            color: #ddd;
+            border-radius: 10px;
+            border-style: solid;
+            border-color: #666;
+            padding: 0.3em;
+        }
+
+        #content {
+            margin: auto;
+            width: 1000px;
+            max-width: 100%;
+        }
+
+        .option {
+            margin: 2rem 0;
+        }
+
+        .name {
+            font-size: 150%;
+            color: #00bfff;
+            display: inline;
+        }
+
+        .type {
+            color: #aaa;
+            font-style: italic;
+            margin-left: 1rem;
+            display: inline;
+        }
+
+        .example::before {
+            content: "Example: ";
+            color: #ddd;
+        }
+
+        .example {
+            color: #aaa;
+        }
+    </style>
+</head>
+
+<body>
+    <input id="search" type="text" placeholder="Search" oninput="search()" />
+    <div id="content" class="language-nix">
+<div class="option" id="extraGamedirFiles">
+  <div class="name">extraGamedirFiles</div>
+  <div class="type">list of submodules</div>
+  <div class="desc">Extra files to symlink into the game directory.</div>
+  
+</div>
+
+<div class="option" id="extraGamedirFiles.*.path">
+  <div class="name">extraGamedirFiles.*.path</div>
+  <div class="type">non-empty string</div>
+  <div class="desc">Where to link the file, relative to the game directory.</div>
+  <div class="example">config/something.cfg</div>
+
+</div>
+
+<div class="option" id="extraGamedirFiles.*.source">
+  <div class="name">extraGamedirFiles.*.source</div>
+  <div class="type">path</div>
+  <div class="desc">Path to the file to be linked.</div>
+  
+</div>
+
+<div class="option" id="fabric.hash">
+  <div class="name">fabric.hash</div>
+  <div class="type">string</div>
+  <div class="desc">The hash of the fabric version.
+Leave it empty to have nix tell you what to use.
+</div>
+  
+</div>
+
+<div class="option" id="fabric.version">
+  <div class="name">fabric.version</div>
+  <div class="type">null or non-empty string</div>
+  <div class="desc">The version of fabric to use.
+You'll most likely want the latest version from https://github.com/FabricMC/fabric-loader/releases
+</div>
+  <div class="example">0.12.5</div>
+
+</div>
+
+<div class="option" id="forge.hash">
+  <div class="name">forge.hash</div>
+  <div class="type">string</div>
+  <div class="desc">The hash of the forge version.
+Leave it empty to have nix tell you what to use.
+</div>
+  
+</div>
+
+<div class="option" id="forge.version">
+  <div class="name">forge.version</div>
+  <div class="type">null or non-empty string</div>
+  <div class="desc">The version of forge to use.
+See the available versions here: https://files.minecraftforge.net/net/minecraftforge/forge/
+</div>
+  <div class="example">14.23.5.2855</div>
+
+</div>
+
+<div class="option" id="ftbModpack.hash">
+  <div class="name">ftbModpack.hash</div>
+  <div class="type">string</div>
+  <div class="desc">The hash of the modpack.
+Leave it empty to have nix tell you what to use.
+</div>
+  
+</div>
+
+<div class="option" id="ftbModpack.id">
+  <div class="name">ftbModpack.id</div>
+  <div class="type">null or unsigned integer, meaning >=0</div>
+  <div class="desc">The ID of the modpack you want to install.
+To find it go to https://www.feed-the-beast.com/modpack/ ,
+select your modpack and hover over the title.
+You'll find a string like "Identifier: xx".
+</div>
+  <div class="example">25</div>
+
+</div>
+
+<div class="option" id="ftbModpack.version">
+  <div class="name">ftbModpack.version</div>
+  <div class="type">unsigned integer, meaning >=0</div>
+  <div class="desc">The version ID you want to install.
+To find it go to https://www.feed-the-beast.com/modpack/ ,
+select your modpack, go to the versons tab and hover over the version.
+You'll find a string like "VersionId: xxxx".
+</div>
+  <div class="example">123</div>
+
+</div>
+
+<div class="option" id="liteloader.hash">
+  <div class="name">liteloader.hash</div>
+  <div class="type">string</div>
+  <div class="desc">The hash of the liteloader version.
+Leave it empty to have nix tell you what to use.
+</div>
+  
+</div>
+
+<div class="option" id="liteloader.url">
+  <div class="name">liteloader.url</div>
+  <div class="type">null or non-empty string</div>
+  <div class="desc">The URL to download liteloader from.
+To find it go to https://www.liteloader.com/download
+and copy the URL of the <b>jar file</b>.
+</div>
+  <div class="example">http://jenkins.liteloader.com/job/LiteLoaderInstaller%201.12.2/lastSuccessfulBuild/artifact/build/libs/liteloader-installer-1.12.2-00-SNAPSHOT.jar</div>
+
+</div>
+
+<div class="option" id="minecraft.hash">
+  <div class="name">minecraft.hash</div>
+  <div class="type">string</div>
+  <div class="desc">The hash of the minecraft version.
+Leave it empty to have nix tell you what to use.
+</div>
+  
+</div>
+
+<div class="option" id="minecraft.version">
+  <div class="name">minecraft.version</div>
+  <div class="type">non-empty string</div>
+  <div class="desc">The version of minecraft to use.</div>
+  <div class="example">1.18</div>
+
+</div>
+
+<div class="option" id="mods.curseforge">
+  <div class="name">mods.curseforge</div>
+  <div class="type">list of submodules</div>
+  <div class="desc">List of mods to install from curseforge.
+</div>
+  <div class="example"><pre><code>
+[
+  # JEI
+  {
+    projectId = 238222;
+    fileId = 3043174;
+    hash = "sha256-nbwsDsjCiCH91dykh5CQiVAWB+4lwOhHDEPJ/QvRIFM=";
+  }
+]
+</code></pre>
+</div>
+
+</div>
+
+<div class="option" id="mods.curseforge.*.fileId">
+  <div class="name">mods.curseforge.*.fileId</div>
+  <div class="type">unsigned integer, meaning >=0</div>
+  <div class="desc">The ID of the file on curseforge.
+To find it go to https://www.curseforge.com/minecraft/mc-mods
+and select the mod you want.
+On the files tab, select the file you want.
+The last part of the URL will be the file's ID.
+</div>
+  
+</div>
+
+<div class="option" id="mods.curseforge.*.hash">
+  <div class="name">mods.curseforge.*.hash</div>
+  <div class="type">string</div>
+  <div class="desc">The hash of the mod.
+Leave it empty to have nix tell you what to use.
+</div>
+  
+</div>
+
+<div class="option" id="mods.curseforge.*.projectId">
+  <div class="name">mods.curseforge.*.projectId</div>
+  <div class="type">unsigned integer, meaning >=0</div>
+  <div class="desc">The ID of the mod on curseforge.
+To find it go to https://www.curseforge.com/minecraft/mc-mods
+and select the mod you want. The Project ID will be on the right.
+</div>
+  
+</div>
+
+<div class="option" id="mods.manual">
+  <div class="name">mods.manual</div>
+  <div class="type">list of packages</div>
+  <div class="desc">A list of .jar files to use as mods.
+</div>
+  <div class="example"><pre><code>
+map pkgs.fetchurl [
+  # Extended Hotbar
+  {
+    url = "https://github.com/DenWav/ExtendedHotbar/releases/download/1.2.0/mod-extendedhotbar-1.2.0-mc1.12.2.litemod";
+    hash = "sha256-CyB7jypxXq41wAfb/t1RCsxaS8uZZjAl/h531osq0Fc=";
+  }
+]
+</code></pre>
+</div>
+
+</div>
+
+<div class="option" id="mods.modrinth">
+  <div class="name">mods.modrinth</div>
+  <div class="type">list of submodules</div>
+  <div class="desc">List of mods to install from modrinth.
+</div>
+  <div class="example"><pre><code>
+[
+  # Mod Menu
+  {
+    projectId = "mOgUt4GM";
+    version = "1.16.22";
+    hash = "sha256-bYP08vpv/HbEGGISW6ij0asnfZk1nhn8HUj/A7EV81A=";
+  }
+]
+</code></pre>
+</div>
+
+</div>
+
+<div class="option" id="mods.modrinth.*.hash">
+  <div class="name">mods.modrinth.*.hash</div>
+  <div class="type">string</div>
+  <div class="desc">The hash of the mod.
+Leave it empty to have nix tell you what to use.
+</div>
+  
+</div>
+
+<div class="option" id="mods.modrinth.*.projectId">
+  <div class="name">mods.modrinth.*.projectId</div>
+  <div class="type">non-empty string</div>
+  <div class="desc">The ID of the mod on curseforge.
+To find it go to https://modrinth.com/mods
+and select the mod you want. The Project ID will be on the right.
+</div>
+  
+</div>
+
+<div class="option" id="mods.modrinth.*.version">
+  <div class="name">mods.modrinth.*.version</div>
+  <div class="type">non-empty string</div>
+  <div class="desc">The ID of the file on curseforge.
+To find it go to https://modrinth.com/mods
+and select the mod you want.
+On the versions tab, copy the wanted version from the VERSION column.
+</div>
+  
+</div>
+    </div>
+    <script>
+        for (let d of document.querySelectorAll(".desc")) {
+            // wrap links in <a>
+            d.innerHTML = d.innerHTML.replace(/https?:\/\/\S+/g, '<a href="$&">$&</a>')
+        }
+        let options = Array.from(document.querySelectorAll(".option"));
+        function search() {
+            let value = document.querySelector("#search").value;
+            let filtered = options.filter(x => x.id.includes(value));
+            for (let o of options) {
+                o.style.display = "none";
+            }
+            for (let o of filtered) {
+                o.style.display = "block";
+            }
+        }
+    </script>
+    <script src="https://unpkg.com/prismjs@1.25.0/components/prism-core.min.js"></script>
+    <script src="https://unpkg.com/prismjs@1.25.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script
+        src="https://unpkg.com/prismjs@1.25.0/plugins/normalize-whitespace/prism-normalize-whitespace.min.js"></script>
+</body>
+
+</html>
