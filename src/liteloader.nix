@@ -26,7 +26,7 @@ in
       description = ''
         The URL to download liteloader from.
         To find it go to https://www.liteloader.com/download
-        and copy the URL of the **jar file**.
+        and copy the URL of the <b>jar file</b>.
       '';
       type = types.nullOr types.nonEmptyStr;
     };

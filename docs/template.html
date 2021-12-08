@@ -14,6 +14,10 @@
             color: #ddd;
         }
 
+        a {
+            color: #57d5ff;
+        }
+
         #search {
             position: sticky;
             top: 1rem;
@@ -40,7 +44,7 @@
 
         .name {
             font-size: 150%;
-            color: deepskyblue;
+            color: #00bfff;
             display: inline;
         }
 
@@ -53,6 +57,11 @@
 
         .example::before {
             content: "Example: ";
+            color: #ddd;
+        }
+
+        .example {
+            color: #aaa;
         }
     </style>
 </head>
@@ -63,6 +72,10 @@
         @CONTENT@
     </div>
     <script>
+        for (let d of document.querySelectorAll(".desc")) {
+            // wrap links in <a>
+            d.innerHTML = d.innerHTML.replace(/https?:\/\/\S+/g, '<a href="$&">$&</a>')
+        }
         let options = Array.from(document.querySelectorAll(".option"));
         function search() {
             let value = document.querySelector("#search").value;
