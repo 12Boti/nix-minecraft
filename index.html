@@ -69,6 +69,19 @@
 <body>
     <input id="search" type="text" placeholder="Search" oninput="search()" />
     <div id="content" class="language-nix">
+<div class="option" id="cleanFiles">
+  <div class="name">cleanFiles</div>
+  <div class="type">list of non-empty strings</div>
+  <div class="desc">Files and directories relative to the game directory to delete on every
+startup. Defaults to the "mods" folder.
+</div>
+  <div class="example"><pre><code>
+[ "config" "mods" "resourcepacks" "options.txt" ]
+</code></pre>
+</div>
+
+</div>
+
 <div class="option" id="extraGamedirFiles">
   <div class="name">extraGamedirFiles</div>
   <div class="type">list of submodules</div>
