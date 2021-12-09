@@ -131,7 +131,7 @@ in
         cd "$game_directory"
         ${lib.optionalString (config.cleanFiles != [])
         ''
-          rm -rf ${lib.escapeShellArgs config.cleanFiles}
+          rm -rfv ${lib.escapeShellArgs config.cleanFiles}
         ''}
         ${lib.optionalString (extraGamedir != null)
         ''
