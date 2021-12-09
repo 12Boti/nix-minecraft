@@ -42,6 +42,20 @@ in
       });
     };
 
+    cleanFiles = mkOption {
+      description = ''
+        Files and directories relative to the game directory to delete on every
+        startup. Defaults to the "mods" folder.
+      '';
+      example = ''
+        <pre><code>
+        [ "config" "mods" "resourcepacks" "options.txt" ]
+        </code></pre>
+      '';
+      default = [ "mods" ];
+      type = types.listOf types.nonEmptyStr;
+    };
+
     mods.manual = mkOption {
       example = ''
         <pre><code>
@@ -115,8 +129,11 @@ in
         game_directory="$(realpath "$game_directory")"
         mkdir -p "$game_directory"
         cd "$game_directory"
-        ${lib.optionalString
-        (extraGamedir != null)
+        ${lib.optionalString (config.cleanFiles != [])
+        ''
+          rm -rf ${lib.escapeShellArgs config.cleanFiles}
+        ''}
+        ${lib.optionalString (extraGamedir != null)
         ''
           if [ -d "$game_directory/mods" -a -d "$out/gamedir/mods" ]; then
             diff -q "$game_directory/mods" "$out/gamedir/mods" \
