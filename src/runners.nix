@@ -81,9 +81,15 @@ in
     };
   };
 
-  config.extraGamedirFiles = map
-    (m: { path = "mods/${lib.getName m}"; source = m; })
-    config.mods.manual;
+  config.extraGamedirFiles =
+    let getName = x:
+      if builtins.isPath x
+      then builtins.baseNameOf "${x}"
+      else lib.getName x;
+    in
+    map
+      (m: { path = "mods/${getName m}"; source = m; })
+      config.mods.manual;
 
   config.runners.client =
     let
