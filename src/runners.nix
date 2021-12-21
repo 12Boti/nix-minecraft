@@ -82,7 +82,7 @@ in
   };
 
   config.extraGamedirFiles = map
-    (m: { path = "mods/${m.name}"; source = m; })
+    (m: { path = "mods/${lib.getName m}"; source = m; })
     config.mods.manual;
 
   config.runners.client =
