@@ -69,7 +69,7 @@ in
         </code></pre>
       '';
       default = [ ];
-      type = types.listOf types.package;
+      type = types.listOf types.path;
       description = ''
         A list of .jar files to use as mods.
       '';
