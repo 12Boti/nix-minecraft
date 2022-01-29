@@ -58,10 +58,11 @@ let
 in
 lib.optionalAttrs enabled (
   (removeAttrs module [ "overrideArguments" ]) // {
-    arguments =
+    minecraftArgs =
       if module.overrideArguments
-      then mkOverride 90 module.arguments
-      else module.arguments;
+      then mkOverride 90 module.minecraftArgs
+      else module.minecraftArgs;
+    jvmArgs = module.jvmArgs;
     mainClass = mkOverride 90 module.mainClass;
     libraries = map
       (l:

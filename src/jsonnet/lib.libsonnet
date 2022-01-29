@@ -67,9 +67,9 @@ local os = 'linux';
                + (if 'checksums' in l
                   then { sha1: l.checksums[0] }
                   else {})
-               + (if 'file' in l
-                  then { file: l.file }
-                  else {})
+               + (if $.has(l, 'downloads.artifact.path')
+                  then { destPath: l.downloads.artifact.path }
+                  else { destPath: $.name_to_path(l.name) })
         )
         for l in pkg.libraries
       ]) + (if $.has(pkg, 'downloads.client', false)
@@ -78,6 +78,12 @@ local os = 'linux';
               type: 'jar',
               url: pkg.downloads.client.url,
               sha1: pkg.downloads.client.sha1,
+              destPath:
+                'net/minecraft/client/'
+                + pkg.id
+                + '/client-'
+                + pkg.id
+                + '.jar',
             }]
             else []),
     }
@@ -95,23 +101,27 @@ local os = 'linux';
        else {})
     + (if 'minecraftArguments' in pkg
        then {
-         arguments: std.split(pkg.minecraftArguments, ' '),
+         minecraftArgs: std.split(pkg.minecraftArguments, ' '),
+         jvmArgs: [],
          overrideArguments: true,
        }
        else {})
     + (if 'arguments' in pkg
-       then {
-         arguments: std.filter(function(x) x != null, [
-           if std.isString(arg)
-           then arg
-           else
-             (if $.is_allowed(arg.rules)
-              then arg.value)
-
-           for arg in (pkg.arguments.game + pkg.arguments.jvm)
-         ]),
-         overrideArguments: false,
-       }
+       then
+         local string_args = function(args)
+           std.filter(function(x) x != null, [
+             if std.isString(arg)
+             then arg
+             else
+               (if $.is_allowed(arg.rules)
+                then arg.value)
+             for arg in args
+           ]);
+         {
+           minecraftArgs: string_args(pkg.arguments.game),
+           jvmArgs: string_args(pkg.arguments.jvm),
+           overrideArguments: false,
+         }
        else {})
     + (if 'inheritsFrom' in pkg
        then { requiredMinecraftVersion: pkg.inheritsFrom }
@@ -127,7 +137,7 @@ local os = 'linux';
         libraries: [
           if 'sha1' in l || 'path' in l
           then l
-          else {
+          else l {
             name: l.name,
             type: l.type,
             path: get_path(l.name),

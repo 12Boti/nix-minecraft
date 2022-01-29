@@ -85,7 +85,7 @@ in
     let getName = x:
       if builtins.isPath x
       then builtins.baseNameOf "${x}"
-      else lib.getName x;
+      else x.name;
     in
     map
       (m: { path = "mods/${getName m}"; source = m; })
@@ -103,7 +103,14 @@ in
           ];
       };
 
-      classpath = lib.concatStringsSep ":" config.downloaded.jars;
+      jarsDir = pkgs.symlinkJoin {
+        name = "minecraft-libraries";
+        paths = config.downloaded.jars;
+      };
+
+      classpath = lib.concatMapStringsSep ":"
+        (x: "$library_directory/" + x.destPath)
+        (lib.filter (x: x.type == "jar") config.internal.libraries);
 
       jre = {
         "8" = pkgs.jre8;
@@ -133,6 +140,10 @@ in
         version_name='${config.minecraft.version}'
         game_directory="''${MINECRAFT_GAMEDIR:-${config.gamedir}}"
         game_directory="$(realpath "$game_directory")"
+        natives_directory="$out/natives"
+        library_directory="$out/libraries"
+        classpath_separator=':'
+        classpath="${classpath}"
         mkdir -p "$game_directory"
         cd "$game_directory"
         ${lib.optionalString (config.cleanFiles != [])
@@ -158,14 +169,15 @@ in
         #  DISPLAY and XAUTHORITY for graphics (x11)
         #  XDG_RUNTIME_DIR for sound (pulseaudio?)
         exec env -i \
-          LD_LIBRARY_PATH="$out/natives" \
+          LD_LIBRARY_PATH="$natives_directory" \
           DISPLAY="$DISPLAY" XAUTHORITY="$XAUTHORITY" \
           XDG_RUNTIME_DIR="$XDG_RUNTIME_DIR" \
           ${jre}/bin/java \
-          -Djava.library.path="$out/natives" \
-          -classpath '${classpath}' \
+          ${lib.concatMapStringsSep " " (x: ''"${x}"'') config.internal.jvmArgs} \
+          -Djava.library.path="$natives_directory" \
+          -classpath "$classpath" \
           '${config.internal.mainClass}' \
-          ${lib.concatMapStringsSep " " (x: ''"${x}"'') config.internal.arguments}
+          ${lib.concatMapStringsSep " " (x: ''"${x}"'') config.internal.minecraftArgs}
       '';
     in
     pkgs.stdenvNoCC.mkDerivation
@@ -181,6 +193,7 @@ in
           echo setting up environment
           mkdir -p $out
           ln -s ${nativeLibsDir} $out/natives
+          ln -s ${jarsDir} $out/libraries
           ln -s ${config.downloaded.assets} $out/assets
           ${lib.optionalString
           (extraGamedir != null)

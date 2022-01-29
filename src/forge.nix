@@ -50,7 +50,7 @@ in
         'https://maven.minecraftforge.net/net/minecraftforge/forge/${versionStr}/forge-${versionStr}-installer.jar'
           
       java -jar installer.jar --extract
-      forgeJar="forge-*.jar"
+      forgeJar=$(find -name 'forge-*.jar')
 
       files="$(unzip -Z -1 installer.jar)"
       if [[ "$files" =~ "version.json" ]]
@@ -61,7 +61,7 @@ in
       fi
     '';
     scriptAfter = ''
-      cp $forgeJar $out/forge.jar
+      test -n "$forgeJar" && cp $forgeJar $out/forge.jar
     '';
   };
 }

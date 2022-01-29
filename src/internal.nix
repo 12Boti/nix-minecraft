@@ -4,8 +4,15 @@ let
 in
 {
   options.internal = {
-    arguments = mkOption {
+    minecraftArgs = mkOption {
       type = types.listOf types.str;
+      default = [ ];
+      internal = true;
+    };
+
+    jvmArgs = mkOption {
+      type = types.listOf types.str;
+      default = [ ];
       internal = true;
     };
 
@@ -50,6 +57,10 @@ in
             internal = true;
           };
           name = mkOption {
+            type = types.nonEmptyStr;
+            internal = true;
+          };
+          destPath = mkOption {
             type = types.nonEmptyStr;
             internal = true;
           };

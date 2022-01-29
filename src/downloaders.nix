@@ -37,10 +37,22 @@ in
     jars = map
       (
         javaLib:
-        # check if already downloaded
-        if javaLib.path != null
-        then javaLib.path
-        else pkgs.fetchurl { inherit (javaLib) url sha1; }
+        let downloaded =
+          # check if already downloaded
+          if javaLib.path != null
+          then
+            javaLib.path
+          else
+            pkgs.fetchurl
+              { inherit (javaLib) url sha1; };
+        in
+        pkgs.runCommandLocal
+          "${javaLib.name}"
+          { }
+          ''
+            mkdir -p "$(dirname "$out/${javaLib.destPath}")"
+            ln -s '${downloaded}' "$out/${javaLib.destPath}"
+          ''
       )
       (builtins.filter (x: x.type == "jar") config.internal.libraries);
     natives = map
