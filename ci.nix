@@ -131,6 +131,16 @@ lib.mapAttrs (_: m: minecraft (shared // m))
       }
     ];
   };
+  fabric18 = {
+    minecraft = {
+      version = "1.18";
+      hash = "sha256-NR2InQHkIFDfYYYyg8haIU1DvcjZD9f9Jfg4RRsX3fI=";
+    };
+    fabric = {
+      version = "0.12.12";
+      hash = "sha256-RTq/itGPUUiRzG/wjDiW6YAALFB7Pe7DWFIOdClZG14=";
+    };
+  };
   vanilla10 = {
     minecraft = {
       version = "1.10.2";
