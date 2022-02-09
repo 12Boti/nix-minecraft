@@ -62,7 +62,6 @@ lib.optionalAttrs enabled (
       if module.overrideArguments
       then mkOverride 90 module.minecraftArgs
       else module.minecraftArgs;
-    jvmArgs = module.jvmArgs;
     mainClass = mkOverride 90 module.mainClass;
     libraries = map
       (l:
