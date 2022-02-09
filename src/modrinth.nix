@@ -27,10 +27,11 @@ let
         SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
       }
       ''
-        url=$(
+        url="$(
         curl -L 'https://api.modrinth.com/api/v1/mod/${projectId}/version' \
-        | jq -r '.[] | select(.version_number == "${version}") | .files[0].url'
-        )
+        | jq -r '.[] | select(.version_number == "${version}") | .files[0].url' \
+        | sed 's/ /%20/g'
+        )"
         curl -L -o "$out" "$url"
       '';
 in
