@@ -142,39 +142,6 @@ See the available versions here: https://files.minecraftforge.net/net/minecraftf
 
 </div>
 
-<div class="option" id="ftbModpack.hash">
-  <div class="name">ftbModpack.hash</div>
-  <div class="type">string</div>
-  <div class="desc">The hash of the modpack.
-Leave it empty to have nix tell you what to use.
-</div>
-  
-</div>
-
-<div class="option" id="ftbModpack.id">
-  <div class="name">ftbModpack.id</div>
-  <div class="type">null or unsigned integer, meaning >=0</div>
-  <div class="desc">The ID of the modpack you want to install.
-To find it go to https://www.feed-the-beast.com/modpack/ ,
-select your modpack and hover over the title.
-You'll find a string like "Identifier: xx".
-</div>
-  <div class="example">25</div>
-
-</div>
-
-<div class="option" id="ftbModpack.version">
-  <div class="name">ftbModpack.version</div>
-  <div class="type">unsigned integer, meaning >=0</div>
-  <div class="desc">The version ID you want to install.
-To find it go to https://www.feed-the-beast.com/modpack/ ,
-select your modpack, go to the versons tab and hover over the version.
-You'll find a string like "VersionId: xxxx".
-</div>
-  <div class="example">123</div>
-
-</div>
-
 <div class="option" id="gamedir">
   <div class="name">gamedir</div>
   <div class="type">non-empty string</div>
@@ -221,6 +188,72 @@ Leave it empty to have nix tell you what to use.
   <div class="type">non-empty string</div>
   <div class="desc">The version of minecraft to use.</div>
   <div class="example">1.18</div>
+
+</div>
+
+<div class="option" id="modpack.curseforge.fileId">
+  <div class="name">modpack.curseforge.fileId</div>
+  <div class="type">unsigned integer, meaning >=0</div>
+  <div class="desc">The version ID you want to install.
+To find it go to https://www.curseforge.com/minecraft/modpacks
+and select the modpack you want.
+On the files tab, select the file you want.
+The last part of the URL will be the file's ID.
+</div>
+  <div class="example">3590506</div>
+
+</div>
+
+<div class="option" id="modpack.curseforge.hash">
+  <div class="name">modpack.curseforge.hash</div>
+  <div class="type">string</div>
+  <div class="desc">The hash of the modpack.
+Leave it empty to have nix tell you what to use.
+</div>
+  
+</div>
+
+<div class="option" id="modpack.curseforge.projectId">
+  <div class="name">modpack.curseforge.projectId</div>
+  <div class="type">null or unsigned integer, meaning >=0</div>
+  <div class="desc">The ID of the modpack you want to install.
+To find it go to https://www.curseforge.com/minecraft/modpacks
+and select the modpack you want. The Project ID will be on the right.
+</div>
+  <div class="example">256289</div>
+
+</div>
+
+<div class="option" id="modpack.ftb.hash">
+  <div class="name">modpack.ftb.hash</div>
+  <div class="type">string</div>
+  <div class="desc">The hash of the modpack.
+Leave it empty to have nix tell you what to use.
+</div>
+  
+</div>
+
+<div class="option" id="modpack.ftb.id">
+  <div class="name">modpack.ftb.id</div>
+  <div class="type">null or unsigned integer, meaning >=0</div>
+  <div class="desc">The ID of the modpack you want to install.
+To find it go to https://www.feed-the-beast.com/modpack/ ,
+select your modpack and hover over the title.
+You'll find a string like "Identifier: xx".
+</div>
+  <div class="example">25</div>
+
+</div>
+
+<div class="option" id="modpack.ftb.version">
+  <div class="name">modpack.ftb.version</div>
+  <div class="type">unsigned integer, meaning >=0</div>
+  <div class="desc">The version ID you want to install.
+To find it go to https://www.feed-the-beast.com/modpack/ ,
+select your modpack, go to the versons tab and hover over the version.
+You'll find a string like "VersionId: xxxx".
+</div>
+  <div class="example">123</div>
 
 </div>
 
