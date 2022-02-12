@@ -37,6 +37,7 @@ rec {
     (import ./src/ftb.nix)
     (import ./src/liteloader.nix)
     (import ./src/fabric.nix)
+    (import ./src/curseforge-modpack.nix)
   ];
 
   docs = pkgs.callPackage ./docs { inherit baseModules; };

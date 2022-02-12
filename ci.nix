@@ -165,8 +165,8 @@ lib.mapAttrs (_: m: minecraft (shared // m))
       hash = "sha256-NR2InQHkIFDfYYYyg8haIU1DvcjZD9f9Jfg4RRsX3fI=";
     };
   };
-  modpack10 = {
-    ftbModpack = {
+  ftb10 = {
+    modpack.ftb = {
       id = 25;
       version = 123;
       hash = "sha256-rIK9l8q/WSfaf9nRfDt5A/vTS7Zx+VTPC69JqGHETH4=";
@@ -174,13 +174,31 @@ lib.mapAttrs (_: m: minecraft (shared // m))
     minecraft.hash = "sha256-RJy47jz2Hw77LyyphzFlrvJtCqMZEN0Xp8DdI8ahByk=";
     forge.hash = "sha256-4ILrLyyp2BnMmkuZ92Y2QqZpv4yYFzOsgcBWNW2QAcM=";
   };
-  modpack12 = {
-    ftbModpack = {
+  ftb12 = {
+    modpack.ftb = {
       id = 35;
       version = 2059;
       hash = "sha256-9dN7YrKWHdS97gMQGQbNMVjOBMNMg36qMMot47OthAw=";
     };
     minecraft.hash = "sha256-IUV11B+ydz978Urg6KtfJ8L82+2k7kdLITOUlwOrY/A=";
     forge.hash = "sha256-C63CarysEFLYKqlzfFJpbgUNgP19ymi9pce5zKPmNH4=";
+  };
+  cf12 = {
+    modpack.curseforge = {
+      projectId = 256289;
+      fileId = 3590506;
+      hash = "sha256-sm1JihpKd8OeW5t8E4+/wCgAnD8/HpDCLS+CvdcNmqY=";
+    };
+    minecraft.hash = "sha256-MzGXdT4EwxJ9Icaf8Pcl3/aiE1i30OZfIiH+k8WJ42I=";
+    forge.hash = "sha256-5lQKotcSIgRyb5+MZIEE1U/27rSvwy8Wmb4yCagvsbs=";
+  };
+  rlcraft = {
+    modpack.curseforge = {
+      projectId = 285109;
+      fileId = 3575903;
+      hash = "sha256-M49Nrw4Yo7ZgmWafDAkb3giYjW8vbLnzxPYEpoTKT8Y=";
+    };
+    minecraft.hash = "sha256-MzGXdT4EwxJ9Icaf8Pcl3/aiE1i30OZfIiH+k8WJ42I=";
+    forge.hash = "sha256-5lQKotcSIgRyb5+MZIEE1U/27rSvwy8Wmb4yCagvsbs=";
   };
 }

@@ -16,7 +16,7 @@
 { config, pkgs, lib, ... }:
 let
   inherit (lib) mkOption mkIf types;
-  cfg = config.ftbModpack;
+  cfg = config.modpack.ftb;
 
   json = lib.importJSON (pkgs.fetchurl {
     url = "https://api.modpacks.ch/public/modpack/${toString cfg.id}/${toString cfg.version}";
@@ -46,7 +46,7 @@ let
     json.targets).version;
 in
 {
-  options.ftbModpack = {
+  options.modpack.ftb = {
     id = mkOption {
       example = 25;
       default = null;
