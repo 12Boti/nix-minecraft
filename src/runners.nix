@@ -135,6 +135,7 @@ in
       runner = pkgs.writeShellScript "minecraft-runner" ''
         set -o errexit
         set -o pipefail
+        PATH='${lib.makeBinPath (with pkgs; [ coreutils rsync ])}'
         out='%OUT%'
         auth_player_name="''${MINECRAFT_USERNAME:-${config.username}}"
         version_name='${config.minecraft.version}'
@@ -152,18 +153,22 @@ in
         ''}
         ${lib.optionalString (extraGamedir != null)
         ''
-          if [ -d "$game_directory/mods" -a -d "$out/gamedir/mods" ]; then
-            diff -q "$game_directory/mods" "$out/gamedir/mods" \
-              || echo "warning: mods folder already exists, remove it in case of conflicts and try again"
-          fi
           echo "copying files to game directory ($game_directory)"
-          ${pkgs.rsync}/bin/rsync -rL --ignore-existing --chmod=755 --info=skip2,name $out/gamedir/ "$game_directory"
+          rsync -rL --ignore-existing --chmod=755 --info=skip2,name $out/gamedir/ "$game_directory"
         ''}
         assets_root="$out/assets"
         assets_index_name='${config.internal.assets.id}'
-        auth_uuid='1234'
-        auth_access_token='REPLACEME'
-        user_type='mojang'
+
+        # TODO:
+        auth_uuid=""
+        auth_xuid=""
+        auth_access_token=""
+        user_type=""
+        version_type=""
+        launcher_name=""
+        launcher_version=""
+        clientid=""
+        
         # clear all other environment variables (yay purity)
         # keep:
         #  DISPLAY and XAUTHORITY for graphics (x11)
