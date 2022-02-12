@@ -3,7 +3,7 @@ mkdir $1.dir
 cd $1.dir
 ../$1/bin/minecraft >& ../$1.log &
 PID=$!
-sleep 10
+sleep 30
 if kill -0 $PID
 then
     kill $PID

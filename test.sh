@@ -5,4 +5,4 @@ rm -rf "test"
 mkdir "test"
 cd "test"
 nix-build ../ci.nix
-ls | parallel -j 0 bash ../test-one.sh
+ls | parallel -j 2 bash ../test-one.sh

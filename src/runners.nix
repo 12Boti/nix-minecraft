@@ -124,8 +124,8 @@ in
         else
           let scripts = map
             ({ path, source }: ''
-              mkdir -p "$(dirname "$out"/'${path}')"
-              ln -s '${source}' "$out"/'${path}'
+              mkdir -p "$(dirname "$out"/${lib.escapeShellArg path})"
+              ln -s ${lib.escapeShellArg source} "$out"/${lib.escapeShellArg path}
             '')
             config.extraGamedirFiles;
           in

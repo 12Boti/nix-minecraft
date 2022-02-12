@@ -48,16 +48,16 @@ lib.mapAttrs (_: m: minecraft (shared // m))
     ];
   };
   # FIXME
-  forge18 = {
-    minecraft = {
-      version = "1.18";
-      hash = "sha256-NR2InQHkIFDfYYYyg8haIU1DvcjZD9f9Jfg4RRsX3fI=";
-    };
-    forge = {
-      version = "38.0.17";
-      hash = "sha256-rGc1Bth9/Vetr8TnnQwgxrlgx09S84or4IZeirNeW9M=";
-    };
-  };
+  # forge18 = {
+  #   minecraft = {
+  #     version = "1.18";
+  #     hash = "sha256-NR2InQHkIFDfYYYyg8haIU1DvcjZD9f9Jfg4RRsX3fI=";
+  #   };
+  #   forge = {
+  #     version = "38.0.17";
+  #     hash = "sha256-rGc1Bth9/Vetr8TnnQwgxrlgx09S84or4IZeirNeW9M=";
+  #   };
+  # };
   liteloader10 = {
     liteloader = {
       url = "http://dl.liteloader.com/redist/1.10.2/liteloader-installer-1.10.2-00.jar";
