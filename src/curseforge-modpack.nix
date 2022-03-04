@@ -42,7 +42,12 @@ let
 
   forgeVersion = (lib.findFirst
     (t: t.name == "forge")
-    (throw "forge not found in modpack targets")
+    { version = null; }
+    json.targets).version;
+
+  fabricVersion = (lib.findFirst
+    (t: t.name == "fabric")
+    { version = null; }
     json.targets).version;
 
   mcVersion = (lib.findFirst
@@ -121,7 +126,8 @@ in
 
   config = mkIf (cfg.projectId != null) {
     minecraft.version = mcVersion;
-    forge.version = forgeVersion;
     extraGamedirFiles = normalFiles ++ lockedFiles ++ extractedFiles;
+    fabric.version = fabricVersion;
+    forge.version = forgeVersion;
   };
 }

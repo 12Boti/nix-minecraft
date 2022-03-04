@@ -192,6 +192,15 @@ lib.mapAttrs (_: m: minecraft (shared // m))
     minecraft.hash = "sha256-MzGXdT4EwxJ9Icaf8Pcl3/aiE1i30OZfIiH+k8WJ42I=";
     forge.hash = "sha256-5lQKotcSIgRyb5+MZIEE1U/27rSvwy8Wmb4yCagvsbs=";
   };
+  cf-fabric = {
+    modpack.curseforge = {
+      projectId = 548076;
+      fileId = 3671527;
+      hash = "sha256-SI6uY/LFWjOV3UepolsymI77N1zrwgP4Fx6O7oD8tpo=";
+    };
+    minecraft.hash = "sha256-q4/9jULF5ulFfIUI44x6HVSWcTcZYhpcJHc/b0YZf2o=";
+    fabric.hash = "sha256-pZlF6NQ/1w0iJAsP4gbUitB8kju+TBKFrFojPFmjGTU=";
+  };
   rlcraft = {
     modpack.curseforge = {
       projectId = 285109;
