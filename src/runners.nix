@@ -169,14 +169,9 @@ in
         launcher_version=""
         clientid=""
         
-        # clear all other environment variables (yay purity)
-        # keep:
-        #  DISPLAY and XAUTHORITY for graphics (x11)
-        #  XDG_RUNTIME_DIR for sound (pulseaudio?)
-        exec env -i \
-          LD_LIBRARY_PATH="$natives_directory" \
-          DISPLAY="$DISPLAY" XAUTHORITY="$XAUTHORITY" \
-          XDG_RUNTIME_DIR="$XDG_RUNTIME_DIR" \
+        exec env \
+          -u PATH \
+          LD_LIBRARY_PATH="$natives_directory:$LD_LIBRARY_PATH" \
           ${jre}/bin/java \
           ${lib.concatMapStringsSep " " (x: ''"${x}"'') config.internal.jvmArgs} \
           -Djava.library.path="$natives_directory" \
