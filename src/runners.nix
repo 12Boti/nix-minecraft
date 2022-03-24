@@ -99,7 +99,7 @@ in
           config.downloaded.natives
           ++ [
             "${pkgs.libpulseaudio}/lib"
-            "${pkgs.xlibs.libXxf86vm}/lib"
+            "${pkgs.xorg.libXxf86vm}/lib"
           ];
       };
 

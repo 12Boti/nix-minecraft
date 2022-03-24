@@ -14,7 +14,7 @@ lib.mapAttrs (_: m: minecraft (shared // m))
   forge10 = {
     minecraft = {
       version = "1.10.2";
-      hash = "sha256-RJy47jz2Hw77LyyphzFlrvJtCqMZEN0Xp8DdI8ahByk=";
+      hash = "sha256-zSBE9NJuMA+iGqpFBEZVp1pBA3Rb1X3u9cjhYlkUx7g=";
     };
     forge = {
       version = "12.18.3.2511";
@@ -24,7 +24,7 @@ lib.mapAttrs (_: m: minecraft (shared // m))
   forge12 = {
     minecraft = {
       version = "1.12.2";
-      hash = "sha256-IUV11B+ydz978Urg6KtfJ8L82+2k7kdLITOUlwOrY/A=";
+      hash = "sha256-MzGXdT4EwxJ9Icaf8Pcl3/aiE1i30OZfIiH+k8WJ42I=";
     };
     forge = {
       version = "14.23.5.2855";
@@ -63,7 +63,7 @@ lib.mapAttrs (_: m: minecraft (shared // m))
       url = "http://dl.liteloader.com/redist/1.10.2/liteloader-installer-1.10.2-00.jar";
       hash = "sha256-qoeFTNhO9O11L7WHmA4l5bdsFO2hU0jkEfOndEfSfrY=";
     };
-    minecraft.hash = "sha256-RJy47jz2Hw77LyyphzFlrvJtCqMZEN0Xp8DdI8ahByk=";
+    minecraft.hash = "sha256-zSBE9NJuMA+iGqpFBEZVp1pBA3Rb1X3u9cjhYlkUx7g=";
     mods.curseforge = [
       # Armors HUD Revived
       {
@@ -78,7 +78,7 @@ lib.mapAttrs (_: m: minecraft (shared // m))
       url = "http://jenkins.liteloader.com/job/LiteLoaderInstaller%201.12.2/lastSuccessfulBuild/artifact/build/libs/liteloader-installer-1.12.2-00-SNAPSHOT.jar";
       hash = "sha256-AfxOgCWliIAMBlMTOMC3gdSShuRB5E6yYYIw0fe8jBM=";
     };
-    minecraft.hash = "sha256-IUV11B+ydz978Urg6KtfJ8L82+2k7kdLITOUlwOrY/A=";
+    minecraft.hash = "sha256-MzGXdT4EwxJ9Icaf8Pcl3/aiE1i30OZfIiH+k8WJ42I=";
     mods.manual = map pkgs.fetchurl [
       # Extended Hotbar
       {
@@ -90,7 +90,7 @@ lib.mapAttrs (_: m: minecraft (shared // m))
   fabric16 = {
     minecraft = {
       version = "1.16.5";
-      hash = "sha256-khV5PppuBrJ15iXRT/UzV1WfTPumYfn6ae2bBJVT0Hk=";
+      hash = "sha256-Z3QihW8owCc++F/NOPDZAkdDxCI5+7/fsH+l+pC3ZwQ=";
     };
     fabric = {
       version = "0.12.5";
@@ -134,7 +134,7 @@ lib.mapAttrs (_: m: minecraft (shared // m))
   fabric18 = {
     minecraft = {
       version = "1.18";
-      hash = "sha256-NR2InQHkIFDfYYYyg8haIU1DvcjZD9f9Jfg4RRsX3fI=";
+      hash = "sha256-ZY7sBHakwhPEw+Xsy5Syue0kqtq/pxqZAfR42g/YhCM=";
     };
     fabric = {
       version = "0.12.12";
@@ -144,43 +144,43 @@ lib.mapAttrs (_: m: minecraft (shared // m))
   vanilla10 = {
     minecraft = {
       version = "1.10.2";
-      hash = "sha256-RJy47jz2Hw77LyyphzFlrvJtCqMZEN0Xp8DdI8ahByk=";
+      hash = "sha256-zSBE9NJuMA+iGqpFBEZVp1pBA3Rb1X3u9cjhYlkUx7g=";
     };
   };
   vanilla12 = {
     minecraft = {
       version = "1.12.2";
-      hash = "sha256-IUV11B+ydz978Urg6KtfJ8L82+2k7kdLITOUlwOrY/A=";
+      hash = "sha256-MzGXdT4EwxJ9Icaf8Pcl3/aiE1i30OZfIiH+k8WJ42I=";
     };
   };
   vanilla16 = {
     minecraft = {
       version = "1.16";
-      hash = "sha256-I093o0KIr1gd98xZOtM276MOUAI1Nf3R8m9+8viDQDY=";
+      hash = "sha256-CqDl0EOmpGSHizaJzaEjM+VbEZC8WIie7D/iUzxzQyE=";
     };
   };
   vanilla18 = {
     minecraft = {
       version = "1.18";
-      hash = "sha256-NR2InQHkIFDfYYYyg8haIU1DvcjZD9f9Jfg4RRsX3fI=";
+      hash = "sha256-ZY7sBHakwhPEw+Xsy5Syue0kqtq/pxqZAfR42g/YhCM=";
     };
   };
   ftb10 = {
     modpack.ftb = {
       id = 25;
       version = 123;
-      hash = "sha256-rIK9l8q/WSfaf9nRfDt5A/vTS7Zx+VTPC69JqGHETH4=";
+      hash = "sha256-BgF7qlhiWdcY9nzWbYlmDas8ynJP88/x0KnNsl+7Gxs=";
     };
-    minecraft.hash = "sha256-RJy47jz2Hw77LyyphzFlrvJtCqMZEN0Xp8DdI8ahByk=";
+    minecraft.hash = "sha256-zSBE9NJuMA+iGqpFBEZVp1pBA3Rb1X3u9cjhYlkUx7g=";
     forge.hash = "sha256-4ILrLyyp2BnMmkuZ92Y2QqZpv4yYFzOsgcBWNW2QAcM=";
   };
   ftb12 = {
     modpack.ftb = {
       id = 35;
       version = 2059;
-      hash = "sha256-9dN7YrKWHdS97gMQGQbNMVjOBMNMg36qMMot47OthAw=";
+      hash = "sha256-P7uf1EhNo4xooQsQ8b49K4bdxZk+twGnp+llG9bo/Us=";
     };
-    minecraft.hash = "sha256-IUV11B+ydz978Urg6KtfJ8L82+2k7kdLITOUlwOrY/A=";
+    minecraft.hash = "sha256-MzGXdT4EwxJ9Icaf8Pcl3/aiE1i30OZfIiH+k8WJ42I=";
     forge.hash = "sha256-C63CarysEFLYKqlzfFJpbgUNgP19ymi9pce5zKPmNH4=";
   };
   cf12 = {
@@ -205,7 +205,7 @@ lib.mapAttrs (_: m: minecraft (shared // m))
     modpack.curseforge = {
       projectId = 285109;
       fileId = 3575903;
-      hash = "sha256-M49Nrw4Yo7ZgmWafDAkb3giYjW8vbLnzxPYEpoTKT8Y=";
+      hash = "sha256-6IE5/+gy6gFTlIxMVAXVM4inusovbgY6MZVxnQLKtkM=";
     };
     minecraft.hash = "sha256-MzGXdT4EwxJ9Icaf8Pcl3/aiE1i30OZfIiH+k8WJ42I=";
     forge.hash = "sha256-5lQKotcSIgRyb5+MZIEE1U/27rSvwy8Wmb4yCagvsbs=";
