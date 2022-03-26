@@ -1,15 +1,14 @@
-{ sources ? import ./nix/sources.nix
-, pkgs ? import sources.nixpkgs { }
-, lib ? pkgs.lib
+{ pkgs
+, mkMinecraft
 }:
 let
+  inherit (pkgs) lib fetchurl;
   shared = {
     username = "NixDude";
     gamedir = "./gamedir";
   };
 in
-with import ./. { };
-lib.mapAttrs (_: m: minecraft (shared // m))
+lib.mapAttrs (_: m: mkMinecraft (shared // m))
 {
   forge10 = {
     minecraft = {
@@ -79,7 +78,7 @@ lib.mapAttrs (_: m: minecraft (shared // m))
       hash = "sha256-AfxOgCWliIAMBlMTOMC3gdSShuRB5E6yYYIw0fe8jBM=";
     };
     minecraft.hash = "sha256-MzGXdT4EwxJ9Icaf8Pcl3/aiE1i30OZfIiH+k8WJ42I=";
-    mods.manual = map pkgs.fetchurl [
+    mods.manual = map fetchurl [
       # Extended Hotbar
       {
         url = "https://github.com/DenWav/ExtendedHotbar/releases/download/1.2.0/mod-extendedhotbar-1.2.0-mc1.12.2.litemod";

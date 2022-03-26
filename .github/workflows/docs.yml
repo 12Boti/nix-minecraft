@@ -12,7 +12,7 @@ jobs:
       - uses: cachix/install-nix-action@v15
       - name: build
         run: |
-          nix-build . -A docs
+          nix build .#docs
           mkdir public
           cp -L result public/index.html
       - name: Deploy to GitHub Pages

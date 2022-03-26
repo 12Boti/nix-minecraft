@@ -1,6 +1,16 @@
 # nix-minecraft
 A Minecraft launcher in nix.
 
+Support for:
+- [forge](https://github.com/MinecraftForge)
+- [fabric](https://fabricmc.net/)
+- liteloader
+- modpacks from 
+  - [curseforge](https://www.curseforge.com/minecraft/modpacks)
+  - [feed the beast](https://www.feed-the-beast.com/)
+
+Fully declarative and reproducible.
+
 ## Usage
 Import the `default.nix` in this repository in any way you want (vendoring, [git submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules), [nix flakes](https://nixos.wiki/wiki/Flakes), [niv](https://github.com/nmattia/niv), `builtins.fetchTarball`, ...).
 Call the minecraft function with the desired configuration.
