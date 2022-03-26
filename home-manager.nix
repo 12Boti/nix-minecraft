@@ -44,7 +44,10 @@ in
         [
           cfg.shared
           ({ name, ... }:
-            { gamedir = mkDefault "${config.home.homeDirectory}/${cfg.basePath}/${name}/gamedir"; })
+            {
+              gamedir = mkDefault "${config.home.homeDirectory}/${cfg.basePath}/${name}/gamedir";
+              _module.args = { inherit pkgs; };
+            })
         ] ++ baseModules
       ));
     };

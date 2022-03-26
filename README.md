@@ -29,6 +29,48 @@ To start minecraft, just
 $ nix run
 ```
 
+## Usage with home-manager
+Add
+```nix
+inputs.nix-minecraft.url = "github:12Boti/nix-minecraft";
+```
+to your flake inputs. The home-manager module will be at
+`nix-minecraft.nixosModules.home-manager.minecraft`
+
+Write your configuration at `programs.minecraft.versions.<name>`, where `<name>`
+is some string identifying that installation. You can have as many installations as you want.
+
+If you want some options to apply for all installations, put them in `programs.minecraft.shared`
+
+All installations will have a directory at `${programs.minecraft.basePath}/<name>/`
+(by default `.minecraft/<name>/`), which contains the game directory `gamedir`
+(where your worlds and settings are saved) and an executable named `run` which
+starts Minecraft.
+
+### Example
+```nix
+{
+  programs.minecraft = {
+    shared = {
+      username = "NixDude";
+    };
+    versions = {
+      "vanilla18" = {
+        minecraft.version = "1.18";
+      };
+      "projectozone3" = {
+        modpack.curseforge = {
+          projectId = 256289;
+          fileId = 3590506;
+          hash = "sha256-sm1JihpKd8OeW5t8E4+/wCgAnD8/HpDCLS+CvdcNmqY=";
+        };
+        forge.hash = "sha256-5lQKotcSIgRyb5+MZIEE1U/27rSvwy8Wmb4yCagvsbs=";
+      };
+    };
+  };
+}
+```
+
 ## License
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
