@@ -11,24 +11,23 @@ Support for:
 
 Fully declarative and reproducible.
 
-## Usage
-Import the `default.nix` in this repository in any way you want (vendoring, [git submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules), [nix flakes](https://nixos.wiki/wiki/Flakes), [niv](https://github.com/nmattia/niv), `builtins.fetchTarball`, ...).
-Call the minecraft function with the desired configuration.
+Usable either standalone, or as a [home-manager](https://github.com/nix-community/home-manager) module.
 
-Example:
-```nix
-let
-  inherit (import ./path/to/default.nix { }) minecraft;
-in
-minecraft {
-  minecraft = {
-    version = "1.18";
-    hash = "sha256-NR2InQHkIFDfYYYyg8haIU1DvcjZD9f9Jfg4RRsX3fI=";
-  };
-}
+## Requirements
+Nix with [flake](https://nixos.wiki/wiki/Flakes) support.
+
+## Standalone usage
+Run:
+```console
+$ nix flake init -t github:12Boti/nix-minecraft
 ```
+This will create a `flake.nix` file in the current directory.
+You can customize it, all options are documented at https://12boti.github.io/nix-minecraft
 
-You can find all the options at https://12boti.github.io/nix-minecraft.
+To start minecraft, just
+```console
+$ nix run
+```
 
 ## License
     This program is free software: you can redistribute it and/or modify
