@@ -168,6 +168,9 @@ in
         launcher_name=""
         launcher_version=""
         clientid=""
+
+        # larger modpacks could need more open file descriptors
+        ulimit -n 4096 || echo "warning: couldn't increase file descriptor limit, continuing" 1>&2
         
         exec env \
           -u PATH \
