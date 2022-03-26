@@ -11,20 +11,14 @@ in
 lib.mapAttrs (_: m: mkMinecraft (shared // m))
 {
   forge10 = {
-    minecraft = {
-      version = "1.10.2";
-      hash = "sha256-zSBE9NJuMA+iGqpFBEZVp1pBA3Rb1X3u9cjhYlkUx7g=";
-    };
+    minecraft.version = "1.10.2";
     forge = {
       version = "12.18.3.2511";
       hash = "sha256-4ILrLyyp2BnMmkuZ92Y2QqZpv4yYFzOsgcBWNW2QAcM=";
     };
   };
   forge12 = {
-    minecraft = {
-      version = "1.12.2";
-      hash = "sha256-MzGXdT4EwxJ9Icaf8Pcl3/aiE1i30OZfIiH+k8WJ42I=";
-    };
+    minecraft.version = "1.12.2";
     forge = {
       version = "14.23.5.2855";
       hash = "sha256-C63CarysEFLYKqlzfFJpbgUNgP19ymi9pce5zKPmNH4=";
@@ -50,7 +44,6 @@ lib.mapAttrs (_: m: mkMinecraft (shared // m))
   # forge18 = {
   #   minecraft = {
   #     version = "1.18";
-  #     hash = "sha256-NR2InQHkIFDfYYYyg8haIU1DvcjZD9f9Jfg4RRsX3fI=";
   #   };
   #   forge = {
   #     version = "38.0.17";
@@ -62,7 +55,6 @@ lib.mapAttrs (_: m: mkMinecraft (shared // m))
       url = "http://dl.liteloader.com/redist/1.10.2/liteloader-installer-1.10.2-00.jar";
       hash = "sha256-qoeFTNhO9O11L7WHmA4l5bdsFO2hU0jkEfOndEfSfrY=";
     };
-    minecraft.hash = "sha256-zSBE9NJuMA+iGqpFBEZVp1pBA3Rb1X3u9cjhYlkUx7g=";
     mods.curseforge = [
       # Armors HUD Revived
       {
@@ -77,7 +69,6 @@ lib.mapAttrs (_: m: mkMinecraft (shared // m))
       url = "http://jenkins.liteloader.com/job/LiteLoaderInstaller%201.12.2/lastSuccessfulBuild/artifact/build/libs/liteloader-installer-1.12.2-00-SNAPSHOT.jar";
       hash = "sha256-AfxOgCWliIAMBlMTOMC3gdSShuRB5E6yYYIw0fe8jBM=";
     };
-    minecraft.hash = "sha256-MzGXdT4EwxJ9Icaf8Pcl3/aiE1i30OZfIiH+k8WJ42I=";
     mods.manual = map fetchurl [
       # Extended Hotbar
       {
@@ -87,10 +78,7 @@ lib.mapAttrs (_: m: mkMinecraft (shared // m))
     ];
   };
   fabric16 = {
-    minecraft = {
-      version = "1.16.5";
-      hash = "sha256-Z3QihW8owCc++F/NOPDZAkdDxCI5+7/fsH+l+pC3ZwQ=";
-    };
+    minecraft.version = "1.16.5";
     fabric = {
       version = "0.12.5";
       hash = "sha256-aZvTZJsZeZBxedM2Ip0/NzSdV/AThy6/rI0AlS0Br1A=";
@@ -131,38 +119,23 @@ lib.mapAttrs (_: m: mkMinecraft (shared // m))
     ];
   };
   fabric18 = {
-    minecraft = {
-      version = "1.18";
-      hash = "sha256-ZY7sBHakwhPEw+Xsy5Syue0kqtq/pxqZAfR42g/YhCM=";
-    };
+    minecraft.version = "1.18";
     fabric = {
       version = "0.12.12";
       hash = "sha256-RTq/itGPUUiRzG/wjDiW6YAALFB7Pe7DWFIOdClZG14=";
     };
   };
   vanilla10 = {
-    minecraft = {
-      version = "1.10.2";
-      hash = "sha256-zSBE9NJuMA+iGqpFBEZVp1pBA3Rb1X3u9cjhYlkUx7g=";
-    };
+    minecraft.version = "1.10.2";
   };
   vanilla12 = {
-    minecraft = {
-      version = "1.12.2";
-      hash = "sha256-MzGXdT4EwxJ9Icaf8Pcl3/aiE1i30OZfIiH+k8WJ42I=";
-    };
+    minecraft.version = "1.12.2";
   };
   vanilla16 = {
-    minecraft = {
-      version = "1.16";
-      hash = "sha256-CqDl0EOmpGSHizaJzaEjM+VbEZC8WIie7D/iUzxzQyE=";
-    };
+    minecraft.version = "1.16";
   };
   vanilla18 = {
-    minecraft = {
-      version = "1.18";
-      hash = "sha256-ZY7sBHakwhPEw+Xsy5Syue0kqtq/pxqZAfR42g/YhCM=";
-    };
+    minecraft.version = "1.18";
   };
   ftb10 = {
     modpack.ftb = {
@@ -170,7 +143,6 @@ lib.mapAttrs (_: m: mkMinecraft (shared // m))
       version = 123;
       hash = "sha256-BgF7qlhiWdcY9nzWbYlmDas8ynJP88/x0KnNsl+7Gxs=";
     };
-    minecraft.hash = "sha256-zSBE9NJuMA+iGqpFBEZVp1pBA3Rb1X3u9cjhYlkUx7g=";
     forge.hash = "sha256-4ILrLyyp2BnMmkuZ92Y2QqZpv4yYFzOsgcBWNW2QAcM=";
   };
   ftb12 = {
@@ -179,7 +151,6 @@ lib.mapAttrs (_: m: mkMinecraft (shared // m))
       version = 2059;
       hash = "sha256-P7uf1EhNo4xooQsQ8b49K4bdxZk+twGnp+llG9bo/Us=";
     };
-    minecraft.hash = "sha256-MzGXdT4EwxJ9Icaf8Pcl3/aiE1i30OZfIiH+k8WJ42I=";
     forge.hash = "sha256-C63CarysEFLYKqlzfFJpbgUNgP19ymi9pce5zKPmNH4=";
   };
   cf12 = {
@@ -188,7 +159,6 @@ lib.mapAttrs (_: m: mkMinecraft (shared // m))
       fileId = 3590506;
       hash = "sha256-sm1JihpKd8OeW5t8E4+/wCgAnD8/HpDCLS+CvdcNmqY=";
     };
-    minecraft.hash = "sha256-MzGXdT4EwxJ9Icaf8Pcl3/aiE1i30OZfIiH+k8WJ42I=";
     forge.hash = "sha256-5lQKotcSIgRyb5+MZIEE1U/27rSvwy8Wmb4yCagvsbs=";
   };
   cf-fabric = {
@@ -197,7 +167,6 @@ lib.mapAttrs (_: m: mkMinecraft (shared // m))
       fileId = 3671527;
       hash = "sha256-SI6uY/LFWjOV3UepolsymI77N1zrwgP4Fx6O7oD8tpo=";
     };
-    minecraft.hash = "sha256-q4/9jULF5ulFfIUI44x6HVSWcTcZYhpcJHc/b0YZf2o=";
     fabric.hash = "sha256-pZlF6NQ/1w0iJAsP4gbUitB8kju+TBKFrFojPFmjGTU=";
   };
   rlcraft = {
@@ -206,7 +175,6 @@ lib.mapAttrs (_: m: mkMinecraft (shared // m))
       fileId = 3575903;
       hash = "sha256-6IE5/+gy6gFTlIxMVAXVM4inusovbgY6MZVxnQLKtkM=";
     };
-    minecraft.hash = "sha256-MzGXdT4EwxJ9Icaf8Pcl3/aiE1i30OZfIiH+k8WJ42I=";
     forge.hash = "sha256-5lQKotcSIgRyb5+MZIEE1U/27rSvwy8Wmb4yCagvsbs=";
   };
 }

@@ -40,7 +40,8 @@
           });
     in
     {
-      nixosModules.home-manager.minecraft = import ./home-manager.nix;
+      nixosModules.home-manager.minecraft =
+        import ./home-manager.nix { inherit (self.lib) baseModules; };
 
       packages = forAllSystems ({ system, pkgs }: {
         docs = pkgs.callPackage ./docs { inherit (self.lib) baseModules; };
@@ -53,7 +54,7 @@
               pkgs.lib.evalModules {
                 modules = [
                   mod
-                  { _module.args.pkgs = pkgs; }
+                  { _module.args = { inherit pkgs; }; }
                 ] ++ self.lib.baseModules;
               };
             in
@@ -61,6 +62,7 @@
         }))
         // {
           baseModules = [
+            { _module.args = { inherit mcversions; }; }
             (import ./src/internal.nix)
             (import ./src/minecraft.nix)
             (import ./src/forge.nix)

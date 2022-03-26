@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with nix-minecraft.  If not, see <https://www.gnu.org/licenses/>.
 
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, mcversions, ... }:
 let
   inherit (lib) mkOption types;
   cfg = config.minecraft;
@@ -31,38 +31,18 @@ in
       type = types.nonEmptyStr;
       default = config.internal.requiredMinecraftVersion;
     };
-    hash = mkOption {
-      description = ''
-        The hash of the minecraft version.
-        Leave it empty to have nix tell you what to use.
-      '';
-      type = types.str;
-    };
   };
 
   config.internal =
     let
-      package = pkgs.runCommandLocal "version.json"
-        {
-          outputHash = cfg.hash;
-          outputHashAlgo = "sha256";
-          nativeBuildInputs = [ pkgs.curl pkgs.jq ];
-          SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
-        }
-        ''
-          url=$(
-          curl -L 'http://launchermeta.mojang.com/mc/game/version_manifest_v2.json' \
-          | jq -r '.versions[] | select(.id == "${cfg.version}") | .url'
-          )
-          curl -L -o $out $url
-        '';
       normalized =
         pkgs.runCommand "package.json"
           {
             nativeBuildInputs = [ pkgs.jsonnet ];
           }
           ''
-            jsonnet -J ${./jsonnet} --tla-str-file orig_str=${package} -o $out \
+            jsonfile="$(find ${mcversions}/history -name '${cfg.version}.json')"
+            jsonnet -J ${./jsonnet} --tla-str-file orig_str="$jsonfile" -o $out \
               ${./jsonnet/normalize.jsonnet}
           '';
       module = lib.importJSON normalized;

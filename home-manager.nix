@@ -13,9 +13,9 @@
 # You should have received a copy of the GNU General Public License
 # along with nix-minecraft.  If not, see <https://www.gnu.org/licenses/>.
 
+{ baseModules }:
 { pkgs, config, lib, ... }:
 let
-  inherit (import ./. { inherit pkgs lib; }) baseModules;
   cfg = config.programs.minecraft;
   inherit (lib) mkOption mkDefault mkEnableOption mkOptionType mergeOneOption types;
 in
