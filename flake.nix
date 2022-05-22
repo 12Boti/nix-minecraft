@@ -65,7 +65,7 @@
             { _module.args = { inherit mcversions; }; }
             (import ./src/internal.nix)
             (import ./src/minecraft.nix)
-            (import ./src/forge.nix)
+            (import ./src/forge)
             (import ./src/curseforge.nix)
             (import ./src/modrinth.nix)
             (import ./src/ftb.nix)

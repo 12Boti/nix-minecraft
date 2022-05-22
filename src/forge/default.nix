@@ -18,13 +18,13 @@ let
   inherit (lib) mkOption mkIf types;
   versionStr = "${config.minecraft.version}-${config.forge.version}";
 
-  downloaded = import ./download-module.nix {
+  downloaded = import ../download-module.nix {
     inherit pkgs lib;
     name = "forge-${versionStr}";
     enabled = config.forge.version != null;
     nativeBuildInputs = with pkgs; [ jre unzip ];
     hash = config.forge.hash;
-    jsonnetFile = ./jsonnet/forge.jsonnet;
+    jsonnetFile = ../jsonnet/forge.jsonnet;
     scriptBefore = ''
       curl -L -o installer.jar \
         'https://maven.minecraftforge.net/net/minecraftforge/forge/${versionStr}/forge-${versionStr}-installer.jar'
