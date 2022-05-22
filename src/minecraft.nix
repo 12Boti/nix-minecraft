@@ -48,5 +48,8 @@ in
       module = lib.importJSON normalized;
     in
     # tell nix what attrs to expect to avoid infinite recursion
-    { inherit (module) minecraftArgs jvmArgs assets javaVersion libraries mainClass; };
+    {
+      inherit (module) minecraftArgs jvmArgs assets javaVersion libraries mainClass;
+      clientMappings = module.clientMappings or { };
+    };
 }

@@ -27,7 +27,7 @@ let
   inherit (pkgs) runCommand jsonnet jq curl cacert;
   inherit (lib) mkOverride importJSON;
 
-  package = runCommand name
+  drv = runCommand name
     {
       nativeBuildInputs = [ jsonnet jq curl ] ++ nativeBuildInputs;
       SSL_CERT_FILE = "${cacert}/etc/ssl/certs/ca-bundle.crt";
@@ -36,12 +36,14 @@ let
       outputHashMode = "recursive";
     }
     ''
-      ${scriptBefore}
-
       mkdir -p $out
+      JSONNET_ARGS=""
+
+      ${scriptBefore}
 
       jsonnet -J ${./jsonnet} -m $out \
         --tla-str-file orig_str=orig.json \
+        $JSONNET_ARGS \
         ${jsonnetFile}
         
       jq -r '.[] | .url + " " + .path' < $out/downloads.json | \
@@ -54,21 +56,25 @@ let
 
       rm $out/downloads.json
     '';
-  module = importJSON "${package}/package.json";
+  module = importJSON "${drv}/package.json";
 in
-lib.optionalAttrs enabled (
-  (removeAttrs module [ "overrideArguments" ]) // {
-    minecraftArgs =
-      if module.overrideArguments
-      then mkOverride 90 module.minecraftArgs
-      else module.minecraftArgs;
-    mainClass = mkOverride 90 module.mainClass;
-    libraries = map
-      (l:
-        if l ? path
-        then l // { path = "${package}/${l.path}"; }
-        else l
-      )
-      module.libraries;
-  }
-)
+{
+  inherit drv;
+  module =
+    lib.optionalAttrs enabled (
+      (removeAttrs module [ "overrideArguments" ]) // {
+        minecraftArgs =
+          if module.overrideArguments
+          then mkOverride 90 module.minecraftArgs
+          else module.minecraftArgs;
+        mainClass = mkOverride 90 module.mainClass;
+        libraries = map
+          (l:
+            if l ? path
+            then l // { path = "${drv}/${l.path}"; }
+            else l
+          )
+          module.libraries;
+      }
+    );
+}

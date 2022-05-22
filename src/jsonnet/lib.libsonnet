@@ -70,6 +70,9 @@ local os = 'linux';
                + (if $.has(l, 'downloads.artifact.path')
                   then { destPath: l.downloads.artifact.path }
                   else { destPath: $.name_to_path(l.name) })
+               + (if $.has(l, 'installerOnly')
+                  then { installerOnly: l.installerOnly }
+                  else {})
         )
         for l in pkg.libraries
       ]) + (if $.has(pkg, 'downloads.client', false)
@@ -128,6 +131,12 @@ local os = 'linux';
        else {})
     + (if 'mainClass' in pkg
        then { mainClass: pkg.mainClass }
+       else {})
+    + (if $.has(pkg, 'downloads.client_mappings', false)
+       then { clientMappings: {
+         sha1: pkg.downloads.client_mappings.sha1,
+         url: pkg.downloads.client_mappings.url,
+       } }
        else {}),
 
   download_pkg(pkg)::

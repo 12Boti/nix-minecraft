@@ -40,16 +40,15 @@ lib.mapAttrs (_: m: mkMinecraft (shared // m))
       }
     ];
   };
-  # FIXME
-  # forge18 = {
-  #   minecraft = {
-  #     version = "1.18";
-  #   };
-  #   forge = {
-  #     version = "38.0.17";
-  #     hash = "sha256-rGc1Bth9/Vetr8TnnQwgxrlgx09S84or4IZeirNeW9M=";
-  #   };
-  # };
+  forge18 = {
+    minecraft = {
+      version = "1.18.2";
+    };
+    forge = {
+      version = "40.1.0";
+      hash = "sha256-MxvdrceY7/o+ZsuIJIr/ZrqZpXXYwX09k4oG4fVboDU=";
+    };
+  };
   liteloader10 = {
     liteloader = {
       url = "http://dl.liteloader.com/redist/1.10.2/liteloader-installer-1.10.2-00.jar";
@@ -137,7 +136,7 @@ lib.mapAttrs (_: m: mkMinecraft (shared // m))
   vanilla18 = {
     minecraft.version = "1.18";
   };
-  ftb10 = {
+  ftb-skyfactory-3 = {
     modpack.ftb = {
       id = 25;
       version = 123;
@@ -145,7 +144,7 @@ lib.mapAttrs (_: m: mkMinecraft (shared // m))
     };
     forge.hash = "sha256-4ILrLyyp2BnMmkuZ92Y2QqZpv4yYFzOsgcBWNW2QAcM=";
   };
-  ftb12 = {
+  ftb-revelation = {
     modpack.ftb = {
       id = 35;
       version = 2059;
@@ -153,7 +152,7 @@ lib.mapAttrs (_: m: mkMinecraft (shared // m))
     };
     forge.hash = "sha256-C63CarysEFLYKqlzfFJpbgUNgP19ymi9pce5zKPmNH4=";
   };
-  cf12 = {
+  project-ozone-3 = {
     modpack.curseforge = {
       projectId = 256289;
       fileId = 3590506;
@@ -161,7 +160,7 @@ lib.mapAttrs (_: m: mkMinecraft (shared // m))
     };
     forge.hash = "sha256-5lQKotcSIgRyb5+MZIEE1U/27rSvwy8Wmb4yCagvsbs=";
   };
-  cf-fabric = {
+  all-of-fabric-5 = {
     modpack.curseforge = {
       projectId = 548076;
       fileId = 3671527;
@@ -176,5 +175,21 @@ lib.mapAttrs (_: m: mkMinecraft (shared // m))
       hash = "sha256-6IE5/+gy6gFTlIxMVAXVM4inusovbgY6MZVxnQLKtkM=";
     };
     forge.hash = "sha256-5lQKotcSIgRyb5+MZIEE1U/27rSvwy8Wmb4yCagvsbs=";
+  };
+  all-in-one = {
+    modpack.curseforge = {
+      projectId = 439293;
+      fileId = 3737061;
+      hash = "sha256-qYZ9EPPuN0NC3mD/EA/LqyXwTpWnA8eFZl5ghGtxpik=";
+    };
+    forge.hash = "sha256-ofBKfALgtOVaonZVfwDPZFLaxyW0DZjcpgTqkUkv+kQ=";
+  };
+  all-the-mods-7 = {
+    modpack.curseforge = {
+      projectId = 426926;
+      fileId = 3797783;
+      hash = "sha256-u+WQuSIWKXkEqLFOehe40YWt5hwdozYtQthm6Pezu0k=";
+    };
+    forge.hash = "sha256-UWg/WJZ6mBUTnRUnJR71tgcgbjFV1mbsdx89einW440=";
   };
 }

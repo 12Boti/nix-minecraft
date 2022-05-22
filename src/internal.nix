@@ -49,6 +49,20 @@ in
       };
     };
 
+    clientMappings = {
+      url = mkOption {
+        type = types.nonEmptyStr;
+        internal = true;
+        default = null;
+      };
+
+      sha1 = mkOption {
+        type = types.nonEmptyStr;
+        internal = true;
+        default = null;
+      };
+    };
+
     libraries = mkOption {
       type = types.listOf (types.submodule {
         options = {
@@ -77,6 +91,11 @@ in
           path = mkOption {
             default = null;
             type = types.nullOr types.path;
+            internal = true;
+          };
+          installerOnly = mkOption {
+            default = false;
+            type = types.bool;
             internal = true;
           };
         };

@@ -17,7 +17,7 @@ local get_url_for = function(libname)
   then 'https://libraries.minecraft.net/' + lib.name_to_path(libname)
   else 'https://maven.minecraftforge.net/' + lib.name_to_path(libname);
 
-function(orig_str)
+function(orig_str, have_forge_jar)
   local orig = lib.pkg_from_str(orig_str);
   local complete = orig {
     libraries: [
@@ -28,7 +28,7 @@ function(orig_str)
       + (if l.name in correct_hashes
          then { sha1: correct_hashes[l.name] }
          else {})
-      + (if without_version(l.name) == 'net.minecraftforge:forge'
+      + (if have_forge_jar && without_version(l.name) == 'net.minecraftforge:forge'
          then { path: 'forge.jar' }
          else {})
       for l in orig.libraries

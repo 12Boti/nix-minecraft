@@ -39,7 +39,7 @@ in
     };
   };
 
-  config.internal = import ./download-module.nix {
+  config.internal = (import ./download-module.nix {
     inherit pkgs lib;
     name = "liteloader";
     enabled = config.liteloader.url != null;
@@ -50,5 +50,5 @@ in
       curl -L -o installer.jar '${cfg.url}'
       unzip -p installer.jar install_profile.json > orig.json
     '';
-  };
+  }).module;
 }
