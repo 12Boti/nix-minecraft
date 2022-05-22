@@ -184,4 +184,12 @@ lib.mapAttrs (_: m: mkMinecraft (shared // m))
     };
     forge.hash = "sha256-ofBKfALgtOVaonZVfwDPZFLaxyW0DZjcpgTqkUkv+kQ=";
   };
+  all-the-mods-7 = {
+    modpack.curseforge = {
+      projectId = 426926;
+      fileId = 3797783;
+      hash = "sha256-u+WQuSIWKXkEqLFOehe40YWt5hwdozYtQthm6Pezu0k=";
+    };
+    forge.hash = "sha256-UWg/WJZ6mBUTnRUnJR71tgcgbjFV1mbsdx89einW440=";
+  };
 }
