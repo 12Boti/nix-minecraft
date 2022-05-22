@@ -86,6 +86,9 @@ in
     let
       installer = "${downloaded.drv}/installer.jar";
       mc = config.minecraft.version;
+      mappings = pkgs.fetchurl {
+        inherit (config.internal.clientMappings) url sha1;
+      };
     in
     mkIf (config.forge.version != null && builtins.pathExists installer)
       ''
@@ -102,8 +105,10 @@ in
 
         # patch installertools to work offline
         installertools=libraries/net/minecraftforge/installertools/*/installertools-*.jar
+        echo "patching installertools ($installertools)"
+        cp ${mappings} mappings.txt
         cp ${./DownloadMojmaps.java} DownloadMojmaps.java
-        ${config.jre}/bin/javac -cp $installertools DownloadMojmaps.java
+        ${pkgs.jdk}/bin/javac -cp $installertools DownloadMojmaps.java
         mkdir -p net/minecraftforge/installertools
         cp DownloadMojmaps.class net/minecraftforge/installertools
         ${pkgs.zip}/bin/zip -urv $installertools net/minecraftforge/installertools/DownloadMojmaps.class
@@ -133,5 +138,7 @@ in
         # copy the files modified by the installer
         rm $out/libraries
         mv libraries $out/libraries
+        rm $out/libraries/net/minecraft/client/${mc}/client-${mc}.jar
+        ln -s $out/libraries/net/minecraft/client/${mc}-*/client-${mc}-*-extra.jar $out/libraries/net/minecraft/client/${mc}/client-${mc}.jar
       '';
 }

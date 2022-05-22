@@ -131,6 +131,12 @@ local os = 'linux';
        else {})
     + (if 'mainClass' in pkg
        then { mainClass: pkg.mainClass }
+       else {})
+    + (if $.has(pkg, 'downloads.client_mappings', false)
+       then { clientMappings: {
+         sha1: pkg.downloads.client_mappings.sha1,
+         url: pkg.downloads.client_mappings.url,
+       } }
        else {}),
 
   download_pkg(pkg)::

@@ -42,11 +42,11 @@ lib.mapAttrs (_: m: mkMinecraft (shared // m))
   };
   forge18 = {
     minecraft = {
-      version = "1.18";
+      version = "1.18.2";
     };
     forge = {
-      version = "38.0.17";
-      hash = "sha256-bGuFs04gEJMxy4fS8nI70arfySI7Da5+dBIAliZJF6A=";
+      version = "40.1.0";
+      hash = "sha256-MxvdrceY7/o+ZsuIJIr/ZrqZpXXYwX09k4oG4fVboDU=";
     };
   };
   liteloader10 = {

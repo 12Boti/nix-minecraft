@@ -49,6 +49,18 @@ in
       };
     };
 
+    clientMappings = {
+      url = mkOption {
+        type = types.nonEmptyStr;
+        internal = true;
+      };
+
+      sha1 = mkOption {
+        type = types.nonEmptyStr;
+        internal = true;
+      };
+    };
+
     libraries = mkOption {
       type = types.listOf (types.submodule {
         options = {
