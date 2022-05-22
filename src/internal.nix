@@ -53,11 +53,13 @@ in
       url = mkOption {
         type = types.nonEmptyStr;
         internal = true;
+        default = null;
       };
 
       sha1 = mkOption {
         type = types.nonEmptyStr;
         internal = true;
+        default = null;
       };
     };
 
