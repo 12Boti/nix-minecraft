@@ -37,7 +37,7 @@ in
     };
   };
 
-  config.internal = import ./download-module.nix {
+  config.internal = (import ./download-module.nix {
     inherit pkgs lib;
     name = "fabric-${config.fabric.version}";
     enabled = config.fabric.version != null;
@@ -47,5 +47,5 @@ in
       curl -L -o orig.json \
         'https://meta.fabricmc.net/v2/versions/loader/${config.minecraft.version}/${config.fabric.version}/profile/json'
     '';
-  };
+  }).module;
 }

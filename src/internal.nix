@@ -79,6 +79,11 @@ in
             type = types.nullOr types.path;
             internal = true;
           };
+          installerOnly = mkOption {
+            default = false;
+            type = types.bool;
+            internal = true;
+          };
         };
       });
       internal = true;

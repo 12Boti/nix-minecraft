@@ -79,7 +79,24 @@ in
       type = types.package;
       internal = true;
     };
+
+    postInstall = mkOption {
+      type = types.str;
+      internal = true;
+      default = "";
+    };
+
+    jre = mkOption {
+      type = types.package;
+      internal = true;
+    };
   };
+
+  config.jre = {
+    "8" = pkgs.jre8;
+    "16" = pkgs.jre;
+    "17" = pkgs.jre;
+  }.${toString config.internal.javaVersion};
 
   config.extraGamedirFiles =
     let getName = x:
@@ -108,15 +125,33 @@ in
         paths = config.downloaded.jars;
       };
 
+      # jarsDir =
+      #   let
+      #     copyJoin =
+      #       { name, paths }:
+      #       let
+      #         args = {
+      #           inherit paths;
+      #           passAsFile = [ "paths" ];
+      #         };
+      #       in
+      #       pkgs.runCommand name args ''
+      #         mkdir -p $out
+      #         for i in $(cat $pathsPath); do
+      #           cp -rnL --no-preserve=all $i/* $out
+      #         done
+      #       '';
+      #   in
+      #   copyJoin {
+      #     name = "minecraft-libraries";
+      #     paths = config.downloaded.jars;
+      #   };
+
       classpath = lib.concatMapStringsSep ":"
         (x: "$library_directory/" + x.destPath)
-        (lib.filter (x: x.type == "jar") config.internal.libraries);
-
-      jre = {
-        "8" = pkgs.jre8;
-        "16" = pkgs.jre;
-        "17" = pkgs.jre;
-      }.${toString config.internal.javaVersion};
+        (lib.filter
+          (x: x.type == "jar" && x.installerOnly == false)
+          config.internal.libraries);
 
       extraGamedir =
         if config.extraGamedirFiles == [ ]
@@ -131,6 +166,8 @@ in
           in
           pkgs.runCommand "symlink-gamedir-files" { }
             (lib.concatStringsSep "\n" scripts);
+
+      argsToString = lib.concatMapStringsSep " " (x: ''"${x}"'');
 
       runner = pkgs.writeShellScript "minecraft-runner" ''
         set -o errexit
@@ -175,12 +212,12 @@ in
         exec env \
           -u PATH \
           LD_LIBRARY_PATH="$natives_directory:$LD_LIBRARY_PATH" \
-          ${jre}/bin/java \
-          ${lib.concatMapStringsSep " " (x: ''"${x}"'') config.internal.jvmArgs} \
+          ${config.jre}/bin/java \
+          ${argsToString config.internal.jvmArgs} \
           -Djava.library.path="$natives_directory" \
           -classpath "$classpath" \
           '${config.internal.mainClass}' \
-          ${lib.concatMapStringsSep " " (x: ''"${x}"'') config.internal.minecraftArgs}
+          ${argsToString config.internal.minecraftArgs}
       '';
     in
     pkgs.stdenvNoCC.mkDerivation
@@ -205,6 +242,12 @@ in
           mkdir -p $out/bin
           sed "s|%OUT%|$out|" ${runner} > $out/bin/minecraft
           chmod +x $out/bin/minecraft
+
+          ${config.postInstall}
         '';
+
+        passthru = {
+          inherit config;
+        };
       };
 }

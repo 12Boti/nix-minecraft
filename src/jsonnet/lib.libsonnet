@@ -70,6 +70,9 @@ local os = 'linux';
                + (if $.has(l, 'downloads.artifact.path')
                   then { destPath: l.downloads.artifact.path }
                   else { destPath: $.name_to_path(l.name) })
+               + (if $.has(l, 'installerOnly')
+                  then { installerOnly: l.installerOnly }
+                  else {})
         )
         for l in pkg.libraries
       ]) + (if $.has(pkg, 'downloads.client', false)
