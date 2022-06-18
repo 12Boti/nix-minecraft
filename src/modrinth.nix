@@ -58,7 +58,7 @@ in
         projectId = mkOption {
           type = types.nonEmptyStr;
           description = ''
-            The ID of the mod on curseforge.
+            The ID of the mod on modrinth.
             To find it go to https://modrinth.com/mods
             and select the mod you want. The Project ID will be on the right.
           '';
@@ -66,7 +66,7 @@ in
         version = mkOption {
           type = types.nonEmptyStr;
           description = ''
-            The ID of the file on curseforge.
+            The version of the mod on modrinth.
             To find it go to https://modrinth.com/mods
             and select the mod you want.
             On the versions tab, copy the wanted version from the VERSION column.
